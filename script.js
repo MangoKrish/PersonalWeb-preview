@@ -1,141 +1,367 @@
 // ==========================================================
-// AKSHAY KRISHNA SIRIGANA — personal site
-// Theme · copy · lens & filters (FLIP) · case files ·
-// boundary drawings · PULSE stats + live correspondence chess
+// AKSHAY KRISHNA SIRIGANA — cinematic scenes
+// A point field (plain canvas, no libraries) morphs from scene to
+// scene as you scroll; each scene's words arrive line by line.
+// Also: case-file drawers, PULSE stats + live correspondence chess.
 // ==========================================================
 
 document.addEventListener('DOMContentLoaded', () => {
   const html = document.documentElement;
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const RM = html.classList.contains('rm');
   const $ = (id) => document.getElementById(id);
-  const pad2 = (n) => String(n).padStart(2, '0');
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+  const easeIO = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 
-  // ---------- helpers ----------
-  function scrollToEl(el, focusEl) {
-    if (!el) return;
-    el.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
-    if (focusEl) {
-      if (!focusEl.hasAttribute('tabindex')) focusEl.setAttribute('tabindex', '-1');
-      focusEl.focus({ preventScroll: true });
+  // ==========================================================
+  // SCENES + PALETTES
+  // ==========================================================
+  const scenes = Array.from(document.querySelectorAll('.scene'));
+  const N_SC = scenes.length;
+  const CFG = [
+    { shape: 'cloud', ox: 0.2, scale: 1.05, tilt: 0.25, alpha: 1 },
+    { shape: 'wave', ox: 0.23, scale: 1.1, tilt: 0.35, alpha: 1 },
+    { shape: 'globe', ox: 0.26, scale: 0.86, tilt: 0.3, alpha: 1 },
+    { shape: 'match', ox: 0.23, scale: 1.0, tilt: 0.2, alpha: 1 },
+    { shape: 'seven', ox: 0.23, scale: 0.85, tilt: 0.3, alpha: 0.9 },
+    { shape: 'knight', ox: -0.05, scale: 0.66, tilt: 0.04, alpha: 0.85, still: true },
+    { shape: 'ring', ox: 0.24, scale: 1.05, tilt: 1.05, alpha: 1 },
+  ];
+  const PAL = {
+    paper: [
+      { bg: '#ECE8DF', fg: '#171614', dot: '#171614' },
+      { bg: '#15463A', fg: '#EEF3EE', dot: '#CFE7D8' },
+      { bg: '#A9431D', fg: '#FFF3EB', dot: '#FFD8C2' },
+      { bg: '#1E2C54', fg: '#EDF1FA', dot: '#B9C8EE' },
+      { bg: '#E3B64A', fg: '#1B1709', dot: '#2A230E' },
+      { bg: '#2B2621', fg: '#F1E9DC', dot: '#D9C9AE' },
+      { bg: '#ECE8DF', fg: '#171614', dot: '#171614' },
+    ],
+    ink: [
+      { bg: '#111110', fg: '#EDE9E0', dot: '#EDE9E0' },
+      { bg: '#0D2620', fg: '#E3EEE6', dot: '#9CCBAE' },
+      { bg: '#34170B', fg: '#FBE9DD', dot: '#F2A57E' },
+      { bg: '#10182F', fg: '#E3E9F6', dot: '#8FA6E0' },
+      { bg: '#2A220E', fg: '#F2E6C4', dot: '#E0C067' },
+      { bg: '#191613', fg: '#EFE6D6', dot: '#C9B795' },
+      { bg: '#111110', fg: '#EDE9E0', dot: '#EDE9E0' },
+    ],
+  };
+  const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  const toHex = (c) => '#' + c.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
+  const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  let palette = [];
+  function loadPalette() {
+    const p = PAL[html.getAttribute('data-theme') === 'ink' ? 'ink' : 'paper'];
+    palette = p.map((c) => ({ bg: hex(c.bg), fg: hex(c.fg), dot: hex(c.dot) }));
+    scenes.forEach((s, i) => { s.style.setProperty('--scene-bg', p[i].bg); s.style.setProperty('--scene-fg', p[i].fg); });
+  }
+  loadPalette();
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  let lastBg = '';
+  // backgrounds blend slowly; text flips quickly at the midpoint so it never
+  // passes through the same mid-tone as the background
+  function applyColours(a, b, m) {
+    const bg = toHex(mix(palette[a].bg, palette[b].bg, m));
+    if (bg === lastBg) return;
+    lastBg = bg;
+    const fg = toHex(mix(palette[a].fg, palette[b].fg, smooth(0.44, 0.56, m)));
+    html.style.setProperty('--bg', bg);
+    html.style.setProperty('--fg', fg);
+    themeMeta.setAttribute('content', bg);
+  }
+
+  // ---------- scroll geometry ----------
+  let centers = [], vh = window.innerHeight;
+  function measure() {
+    vh = window.innerHeight;
+    centers = scenes.map((s) => s.offsetTop + s.offsetHeight / 2);
+    fitKnight();
+  }
+  // the knight stands in whatever gap the layout leaves between the words and the board
+  function fitKnight() {
+    const cfg = CFG[5], wrap = document.querySelector('.board-wrap');
+    if (!wrap) return;
+    const range = document.createRange();
+    let right = 0;
+    scenes[5].querySelectorAll('.chess-copy > *').forEach((el) => { range.selectNodeContents(el); right = Math.max(right, range.getBoundingClientRect().right); });
+    const left = wrap.getBoundingClientRect().left, gap = left - right;
+    const w = window.innerWidth, unitPx = Math.min(w, window.innerHeight) * 0.34;
+    if (gap > 170) {
+      cfg.ox = ((left + right) / 2 - w / 2) / w;
+      cfg.scale = Math.min(0.66, (gap * 0.62) / (1.5 * unitPx));
+      cfg.alpha = 0.85;
+    } else {
+      cfg.ox = -0.05; cfg.scale = 0.66; cfg.alpha = 0.22;
+    }
+  }
+  function sceneFloat() {
+    const y = window.scrollY + vh / 2;
+    if (y <= centers[0]) return 0;
+    for (let i = 0; i < N_SC - 1; i++) {
+      if (y < centers[i + 1]) return i + (y - centers[i]) / (centers[i + 1] - centers[i]);
+    }
+    return N_SC - 1;
+  }
+  function scrollToScene(i, instant) {
+    const top = Math.max(0, centers[i] - vh / 2);
+    window.scrollTo({ top, behavior: instant || RM ? 'auto' : 'smooth' });
+  }
+  measure();
+  if (document.fonts) document.fonts.ready.then(measure);
+  window.addEventListener('resize', () => { measure(); sizeCanvas(); });
+
+  // ---------- line-by-line reveal ----------
+  const revealSets = scenes.map((s) => {
+    const els = Array.from(s.querySelectorAll('.rv'));
+    const kmax = Math.max(1, ...els.map((el) => +el.dataset.k || 0));
+    // the whole scene is composed by the time it reaches centre, however many lines it has
+    return els.map((el) => ({ el, d: Math.min(0.07 * (+el.dataset.k || 0), 0.34 * (+el.dataset.k || 0) / kmax), last: -1 }));
+  });
+  function reveal(sf) {
+    revealSets.forEach((set, i) => {
+      const local = sf - i;
+      if (local < -1.2 || local > 1.2) {
+        set.forEach((r) => { if (r.last !== 0) { r.el.style.opacity = '0'; r.el.style.pointerEvents = 'none'; r.last = 0; } });
+        return;
+      }
+      set.forEach((r) => {
+        const inT = easeOut(clamp((local - (-0.56 + r.d)) / 0.2));
+        const outT = easeIO(clamp((local - 0.3 - r.d * 0.15) / 0.2));
+        const op = inT * (1 - outT);
+        const key = Math.round(op * 200);
+        if (key === r.last) return;
+        r.last = key;
+        const ty = (1 - inT) * 34 - outT * 34;
+        const blur = (1 - op) * 10;
+        r.el.style.opacity = op.toFixed(3);
+        r.el.style.transform = `translate3d(0, ${ty.toFixed(1)}px, 0)`;
+        r.el.style.filter = blur > 0.3 ? `blur(${blur.toFixed(1)}px)` : 'none';
+        r.el.style.pointerEvents = op > 0.5 ? '' : 'none';
+      });
+    });
+  }
+  // keyboard users: bring a scene into view when focus lands inside it
+  scenes.forEach((s, i) => s.addEventListener('focusin', () => {
+    if (Math.abs(sceneFloat() - i) > 0.2) scrollToScene(i, true);
+  }));
+
+  // ==========================================================
+  // THE POINT FIELD
+  // ==========================================================
+  const cv = $('field');
+  const ctx = cv.getContext('2d');
+  let W = 0, H = 0, DPR = 1;
+  function sizeCanvas() {
+    DPR = Math.min(window.devicePixelRatio || 1, 1.75);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  const small = window.matchMedia('(max-width: 760px)').matches;
+  const N = small ? 1300 : 2600;
+
+  function rng(seed) {
+    return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  }
+  const R = rng(20260926);
+  const gauss = () => { let u = 0, v = 0; while (!u) u = R(); while (!v) v = R(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+  const unit = () => { const z = R() * 2 - 1, a = R() * Math.PI * 2, r = Math.sqrt(1 - z * z); return [r * Math.cos(a), z, r * Math.sin(a)]; };
+
+  const SHAPES = {
+    cloud() {
+      const o = [];
+      for (let i = 0; i < N; i++) {
+        if (i % 5 === 0) { const u = unit(); const r = 1.15 + R() * 0.12; o.push(u[0] * r, u[1] * r * 0.85, u[2] * r); }
+        else { o.push(gauss() * 0.42, gauss() * 0.34, gauss() * 0.42); }
+      }
+      return o;
+    },
+    wave() {
+      const o = [], L = 14;
+      for (let i = 0; i < N; i++) {
+        const line = i % L, x = (R() * 2 - 1) * 1.55, env = Math.exp(-x * x * 0.85);
+        const amp = 0.62 * env * (0.55 + 0.45 * Math.sin(line * 0.9 + 1));
+        o.push(x, amp * Math.sin(x * 7 + line * 0.45), -0.5 + (line / (L - 1)));
+      }
+      return o;
+    },
+    globe() {
+      const o = [], sN = Math.floor(N * 0.74), g = Math.PI * (3 - Math.sqrt(5));
+      for (let i = 0; i < sN; i++) {
+        const y = 1 - (i / (sN - 1)) * 2, r = Math.sqrt(1 - y * y), th = g * i;
+        o.push(Math.cos(th) * r * 0.95, y * 0.95, Math.sin(th) * r * 0.95);
+      }
+      const arcs = 9, per = Math.ceil((N - sN) / arcs);
+      for (let a = 0; a < arcs; a++) {
+        const p = unit(), q = unit();
+        for (let j = 0; j < per && o.length < N * 3; j++) {
+          const t = j / (per - 1), h = 1 + 0.42 * Math.sin(Math.PI * t);
+          let x = p[0] + (q[0] - p[0]) * t, y = p[1] + (q[1] - p[1]) * t, z = p[2] + (q[2] - p[2]) * t;
+          const l = Math.hypot(x, y, z) || 1;
+          o.push(x / l * 0.95 * h, y / l * 0.95 * h, z / l * 0.95 * h);
+        }
+      }
+      while (o.length < N * 3) o.push(0, 0, 0);
+      return o;
+    },
+    match() {
+      const o = [], left = [], right = [];
+      for (let i = 0; i < 12; i++) { left.push([-0.95 + gauss() * 0.12, gauss() * 0.3, gauss() * 0.2]); right.push([0.95 + gauss() * 0.12, gauss() * 0.3, gauss() * 0.2]); }
+      const pairs = [[0, 3], [1, 7], [2, 0], [4, 9], [5, 5], [6, 11], [8, 2]];
+      for (let i = 0; i < N; i++) {
+        const k = i % 10;
+        if (k < 3) { const c = left[i % 12]; o.push(c[0] + gauss() * 0.07, c[1] + gauss() * 0.07, c[2] + gauss() * 0.07); }
+        else if (k < 6) { const c = right[i % 12]; o.push(c[0] + gauss() * 0.07, c[1] + gauss() * 0.07, c[2] + gauss() * 0.07); }
+        else {
+          const pr = pairs[i % pairs.length], a = left[pr[0]], b = right[pr[1]], t = R();
+          o.push(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t + Math.sin(Math.PI * t) * 0.32, a[2] + (b[2] - a[2]) * t);
+        }
+      }
+      return o;
+    },
+    seven() {
+      const o = [];
+      for (let i = 0; i < N; i++) {
+        const k = i % 7, u = unit(), r = 0.2 * Math.cbrt(R());
+        const ang = (k / 6) * Math.PI;
+        o.push(-1.08 + k * 0.36 + u[0] * r, Math.sin(ang) * 0.35 - 0.1 + u[1] * r, Math.cos(ang) * 0.35 + u[2] * r);
+      }
+      return o;
+    },
+    knight() {
+      const c = document.createElement('canvas'); c.width = c.height = 200;
+      const x = c.getContext('2d');
+      const p = new Path2D('M12 31h16v-5c0-9-3-16-11-19l-2 4-6 5 1 4 5-1-3 7Z');
+      const base = new Path2D('M10 31h20v5H10Z');
+      x.scale(5, 5);
+      // mostly outline (reads as a knight in dots), a little fill
+      const inside = (a, b) => x.isPointInPath(p, a * 5, b * 5) || x.isPointInPath(base, a * 5, b * 5);
+      const o = [];
+      let guard = 0;
+      while (o.length < N * 3 && guard++ < N * 200) {
+        const px = R() * 40, py = R() * 40;
+        if (!inside(px, py)) continue;
+        const d = 0.6;
+        const edge = !(inside(px + d, py) && inside(px - d, py) && inside(px, py + d) && inside(px, py - d));
+        if (!edge && R() > 0.18) continue;
+        o.push((px - 20) / 15, -(py - 21.5) / 15, (R() - 0.5) * (edge ? 0.08 : 0.3));
+      }
+      while (o.length < N * 3) o.push(0, 0, 0);
+      return o;
+    },
+    ring() {
+      const o = [];
+      for (let i = 0; i < N; i++) {
+        const a = R() * Math.PI * 2, r = 1.05 + gauss() * 0.035;
+        if (i % 9 === 0) o.push(gauss() * 0.07, gauss() * 0.07, gauss() * 0.07);
+        else o.push(Math.cos(a) * r, gauss() * 0.02, Math.sin(a) * r);
+      }
+      return o;
+    },
+  };
+  const shapeData = CFG.map((c) => Float32Array.from(SHAPES[c.shape]()));
+  const burst = new Float32Array(N * 3);
+  const delay = new Float32Array(N);
+  for (let i = 0; i < N; i++) { const u = unit(); burst.set(u, i * 3); delay[i] = R(); }
+
+  let sSmooth = RM ? 0 : -0.55;   // the opening lines arrive on load
+  let pointerX = 0, pointerY = 0, px = 0, py = 0;
+  window.addEventListener('pointermove', (e) => { pointerX = e.clientX / window.innerWidth - 0.5; pointerY = e.clientY / window.innerHeight - 0.5; }, { passive: true });
+
+  const buckets = [[], [], []];
+  function drawField(sf, time) {
+    const idx = clamp(sf, 0, N_SC - 1);
+    const a = Math.floor(idx), b = Math.min(a + 1, N_SC - 1);
+    const m = smooth(0.18, 0.82, idx - a);
+    applyColours(a, b, m);
+    const A = shapeData[a], B = shapeData[b], ca = CFG[a], cb = CFG[b];
+    const ox = small ? 0 : ca.ox + (cb.ox - ca.ox) * m;
+    const scale = ca.scale + (cb.scale - ca.scale) * m;
+    const tilt = ca.tilt + (cb.tilt - ca.tilt) * m + py * 0.25;
+    const alphaF = (ca.alpha + (cb.alpha - ca.alpha) * m) * (small ? 0.3 : 1);
+    const dot = mix(palette[a].dot, palette[b].dot, smooth(0.38, 0.62, m));
+    const waveW = (ca.shape === 'wave' ? 1 - m : 0) + (cb.shape === 'wave' ? m : 0);
+    // flat shapes (the knight) sway to face you; the rest keep turning
+    const spin = time * 0.00013 + sf * 0.9 + px * 0.5;
+    const sway = Math.sin(time * 0.0004) * 0.28 + px * 0.5;
+    const rA = ca.still ? sway : spin, rB = cb.still ? sway : spin;
+    const cA = Math.cos(rA), sA = Math.sin(rA), cB = Math.cos(rB), sB = Math.sin(rB);
+    const ct = Math.cos(tilt), st = Math.sin(tilt);
+    const U = Math.min(W, H) * 0.34 * scale;
+    const cx0 = W / 2 + ox * W, cy0 = H / 2;
+    const D = 3.3;
+    ctx.clearRect(0, 0, W, H);
+    buckets[0].length = buckets[1].length = buckets[2].length = 0;
+    for (let i = 0; i < N; i++) {
+      const j = i * 3;
+      const t = clamp((m - delay[i] * 0.35) / 0.65);
+      const e = easeIO(t);
+      const bu = Math.sin(Math.PI * t) * 0.6;
+      const xa = A[j] * cA + A[j + 2] * sA, za = -A[j] * sA + A[j + 2] * cA;
+      const xb = B[j] * cB + B[j + 2] * sB, zb = -B[j] * sB + B[j + 2] * cB;
+      const X = xa + (xb - xa) * e + burst[j] * bu;
+      let y = A[j + 1] + (B[j + 1] - A[j + 1]) * e + burst[j + 1] * bu;
+      const Z = za + (zb - za) * e + burst[j + 2] * bu;
+      if (waveW > 0) y += Math.sin(X * 5 + time * 0.0022 + Z * 4) * 0.07 * waveW;
+      const Y = y * ct - Z * st, Z2 = y * st + Z * ct;
+      const p = D / (D + Z2);
+      const sx = cx0 + X * U * p, syy = cy0 - Y * U * p;
+      if (sx < -10 || sx > W + 10 || syy < -10 || syy > H + 10) continue;
+      buckets[p > 1.06 ? 0 : p > 0.94 ? 1 : 2].push(sx, syy, p);
+    }
+    const ALPHA = [0.95, 0.62, 0.32];
+    for (let k = 0; k < 3; k++) {
+      const bk = buckets[k];
+      ctx.fillStyle = `rgba(${dot[0] | 0},${dot[1] | 0},${dot[2] | 0},${(ALPHA[k] * alphaF).toFixed(3)})`;
+      for (let i = 0; i < bk.length; i += 3) {
+        const s = 1.1 + 1.5 * bk[i + 2];
+        ctx.fillRect(bk[i] - s / 2, bk[i + 1] - s / 2, s, s);
+      }
     }
   }
 
+  // ---------- the loop ----------
+  let lastT = performance.now();
+  let seenIdx = -1;
+  function frame(now) {
+    const dt = Math.min(64, now - lastT); lastT = now;
+    const target = sceneFloat();
+    sSmooth += (target - sSmooth) * Math.min(1, dt * 0.0055);
+    if (Math.abs(target - sSmooth) < 0.0005) sSmooth = target;
+    px += (pointerX - px) * 0.04; py += (pointerY - py) * 0.04;
+    reveal(sSmooth);
+    drawField(sSmooth, now);
+    sectionBeacon(target, now);
+    requestAnimationFrame(frame);
+  }
+
   // ==========================================================
-  // THEME (pre-paint theme set inline in <head>; values ink / paper)
+  // THEME (values ink / paper, as before)
   // ==========================================================
   const themeToggle = $('themeToggle');
-  const followBtn = $('followSystem');
-  const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  function storedTheme() { try { return localStorage.getItem('aks-theme'); } catch (e) { return null; } }
-  function syncTheme() {
-    const ink = html.getAttribute('data-theme') === 'ink';
-    themeToggle.setAttribute('aria-pressed', String(ink));
-    const st = storedTheme();
-    followBtn.hidden = !(st === 'ink' || st === 'paper');
-    updateLedgerTheme();
-  }
-  function setTheme(next, store) {
-    html.classList.add('theming');
-    html.setAttribute('data-theme', next);
-    if (store) { try { localStorage.setItem('aks-theme', next); } catch (e) { /* private mode */ } }
-    setTimeout(() => html.classList.remove('theming'), 300);
-    syncTheme();
-  }
+  function syncTheme() { themeToggle.setAttribute('aria-pressed', String(html.getAttribute('data-theme') === 'ink')); }
   themeToggle.addEventListener('click', () => {
-    setTheme(html.getAttribute('data-theme') === 'ink' ? 'paper' : 'ink', true);
+    const next = html.getAttribute('data-theme') === 'ink' ? 'paper' : 'ink';
+    html.setAttribute('data-theme', next);
+    try { localStorage.setItem('aks-theme', next); } catch (e) { /* private mode */ }
+    loadPalette();
+    lastBg = '';
+    if (RM) staticColours();
+    syncTheme();
   });
-  followBtn.addEventListener('click', () => {
-    try { localStorage.removeItem('aks-theme'); } catch (e) { /* ignore */ }
-    setTheme(darkQuery.matches ? 'ink' : 'paper', false);
-    themeToggle.focus();
-  });
-  const onSystemTheme = () => {
-    const st = storedTheme();
-    if (st !== 'ink' && st !== 'paper') setTheme(darkQuery.matches ? 'ink' : 'paper', false);
-  };
-  if (darkQuery.addEventListener) darkQuery.addEventListener('change', onSystemTheme);
-
-  // ==========================================================
-  // COPY (email buttons + the forwardable #brief link)
-  // ==========================================================
-  const copyStatus = $('copyStatus');
-  const copyTimers = new WeakMap();
-  function flashCopied(btn, text) {
-    const span = btn.querySelector('span');
-    const use = btn.querySelector('use');
-    if (!btn.dataset.orig) btn.dataset.orig = span.textContent;
-    clearTimeout(copyTimers.get(btn));
-    span.textContent = text;
-    if (use) use.setAttribute('href', '#i-check');
-    copyTimers.set(btn, setTimeout(() => {
-      span.textContent = btn.dataset.orig;
-      if (use) use.setAttribute('href', '#i-copy');
-      copyStatus.textContent = '';
-    }, 1600));
-  }
-  document.querySelectorAll('.copy-email').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(btn.dataset.email);
-        copyStatus.textContent = 'Email copied to clipboard';
-        flashCopied(btn, 'Copied');
-      } catch (e) {
-        location.href = 'mailto:' + btn.dataset.email;
-      }
-    });
-  });
-  const copyBrief = $('copyBrief');
-  copyBrief.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(location.origin + location.pathname + '#brief');
-      copyStatus.textContent = 'Link copied';
-      flashCopied(copyBrief, 'Link copied');
-    } catch (e) { /* nothing sensible to fall back to */ }
-  });
-
-  // ==========================================================
-  // BOUNDARY DRAWINGS — only crossing / return arrows draw in
-  // ==========================================================
-  function prep(fig) { if (fig && !reducedMotion) fig.classList.add('pre'); }
-  function draw(fig) {
-    if (!fig || fig.dataset.drawn) return;
-    fig.dataset.drawn = '1';
-    if (reducedMotion) { fig.classList.remove('pre'); return; }
-    const n = fig.querySelectorAll('.dr').length;
-    fig.classList.add('go');
-    void fig.getBoundingClientRect();
-    fig.classList.remove('pre');
-    setTimeout(() => fig.classList.remove('go'), 600 + 120 * Math.max(0, n - 1) + 80);
-  }
-  const heroFig = $('fig-hero');
-  const privFig = $('fig-privacy');
-  prep(heroFig);
-  prep(privFig);
-  document.querySelectorAll('.case .flow').forEach(prep);
-  const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
-  fontsReady.then(() => setTimeout(() => draw(heroFig), 400));
-
-  // About: the second line of the display quote comes to full ink once
-  const display = document.querySelector('.display');
-  if (reducedMotion || !('IntersectionObserver' in window)) {
-    display.classList.add('lit');
-  } else {
-    const dio = new IntersectionObserver((es) => {
-      if (es.some((e) => e.isIntersecting)) { display.classList.add('lit'); dio.disconnect(); }
-    }, { threshold: 0.5 });
-    dio.observe(display);
+  syncTheme();
+  function staticColours() {
+    html.style.setProperty('--bg', toHex(palette[0].bg));
+    html.style.setProperty('--fg', toHex(palette[0].fg));
   }
 
   // ==========================================================
-  // PULSE — first-party stats beacon + live correspondence chess
-  // Backend: zero-dependency Node service at PULSE. Everything
-  // below fails silent: the site is fully functional with the
-  // backend down (board falls back to exhibition mode).
+  // PULSE — first-party stats beacon (respects DNT and GPC)
   // ==========================================================
   const PULSE = 'https://aks-pulse.vercel.app';
   const DNT = navigator.doNotTrack === '1' || window.doNotTrack === '1' || navigator.globalPrivacyControl === true;
-  html.classList.toggle('no-stats', DNT);
-
   function getVid() {
     try {
       let v = localStorage.getItem('aks-vid');
@@ -149,32 +375,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   const vid = getVid();
-
-  // live ledger of what this visit has queued (the "Right now" row)
-  const sentLog = [];
-  const ledCount = $('ledCount');
-  const ledRows = $('ledRows');
-  const ledDetails = $('ledDetails');
-  function updateLedger() {
-    ledCount.textContent = String(sentLog.length);
-    if (!ledDetails.open) return;
-    ledRows.textContent = '';
-    sentLog.forEach((s) => {
-      const tr = document.createElement('tr');
-      [s.type, s.label || '—', s.t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })].forEach((v) => {
-        const td = document.createElement('td');
-        td.textContent = v;
-        tr.appendChild(td);
-      });
-      ledRows.appendChild(tr);
-    });
-  }
-  ledDetails.addEventListener('toggle', updateLedger);
-
   function beacon(type, label) {
     if (DNT) return;
-    sentLog.push({ type, label: String(label || '').slice(0, 80), t: new Date() });
-    updateLedger();
     try {
       // plain-string body: CORS-safelisted (no preflight), server parses JSON regardless
       const body = JSON.stringify({ vid, type, label: String(label || '').slice(0, 80) });
@@ -183,49 +385,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (e) { /* stats are best-effort */ }
   }
-
-  // ledger: static facts about this browser
-  function updateLedgerTheme() {
-    const el = $('ledTheme');
-    if (!el) return;
-    const st = storedTheme();
-    el.textContent = st === 'ink' ? 'Set to dark.' : st === 'paper' ? 'Set to light.' : 'Not set.';
-  }
-  (function ledgerStatic() {
-    let stored = null;
-    try { stored = localStorage.getItem('aks-vid'); } catch (e) { stored = null; }
-    $('ledVid').textContent = stored
-      ? `a random id, ${stored.slice(0, 4)}…, created on your first visit so your chess game is still here when you return.`
-      : 'not stored — your browser blocks storage.';
-    if (DNT) {
-      $('ledDnt').hidden = false;
-      $('ledQueue').hidden = true;
-      $('statsL1').textContent = 'stats off —';
-      $('statsL2').textContent = 'your browser asked';
-      const strike = privFig.querySelector('.stats-strike');
-      if (strike) strike.removeAttribute('hidden');
-      $('statsListItem').innerHTML = '<s>Stats</s> — off. Your browser sent a do-not-track signal.';
-      $('statsListItem').className = 'gr';
-    }
-  })();
-  syncTheme();
-
   beacon('pageview', location.hash || '/');
-
-  const seenSections = new Set();
-  const sectionIO = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      const id = entry.target.id;
-      if (entry.isIntersecting && !seenSections.has(id)) {
-        seenSections.add(id);
-        beacon('section', id);
-      }
-    });
-  }, { threshold: 0.3 });
-  document.querySelectorAll('main .section').forEach((s) => sectionIO.observe(s));
-
+  // a scene counts as read once it has held the screen for a moment
+  const seen = new Set();
+  let dwellSince = 0;
+  function sectionBeacon(sf, now) {
+    const i = Math.round(sf);
+    const settled = Math.abs(sf - i) < 0.3;
+    if (i !== seenIdx || !settled) { seenIdx = settled ? i : -1; dwellSince = now; return; }
+    const id = scenes[i] && scenes[i].id;
+    if (id && now - dwellSince > 900 && !seen.has(id)) { seen.add(id); beacon('section', id); }
+  }
   themeToggle.addEventListener('click', () => beacon('theme', html.getAttribute('data-theme')));
-  document.querySelectorAll('.copy-email').forEach((b) => b.addEventListener('click', () => beacon('copy_email', '')));
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href]');
     if (!a) return;
@@ -234,307 +405,96 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (href.endsWith('.pdf')) beacon('resume', '');
   });
 
-  if ('IntersectionObserver' in window) {
-    const pio = new IntersectionObserver((es) => {
-      if (es.some((e) => e.isIntersecting)) { draw(privFig); pio.disconnect(); }
-    }, { threshold: 0.4 });
-    pio.observe(privFig);
-  } else { draw(privFig); }
-
   // ==========================================================
-  // THE WORK — lens, filters, case files
+  // DRAWERS — case files and the 30-second version
   // ==========================================================
-  const workLead = $('workLead');
-  const workIndex = $('workIndex');
-  const alsoHead = $('alsoHead');
-  const ruleNote = $('ruleNote');
-  const lensNote = $('lensNote');
-  const chipRow = $('chipRow');
-  const chipLabel = $('chipLabel');
-  const chipClear = $('chipClear');
-  const countEl = $('filterCount');
-  const openAllBtn = $('openAll');
-  const items = Array.from(workIndex.querySelectorAll('.work-item'));
-  const total = items.length;
-  const slugOf = (it) => it.querySelector('article').id.replace(/^p-/, '');
-  const bySlug = new Map(items.map((it) => [slugOf(it), it]));
-  const lensRadios = Array.from(document.querySelectorAll('input[name="lens"]'));
-
-  const LENSES = {
-    nlp: { label: 'NLP', ranked: [
-      ['peppa', 'Five on-device models behind a router with five thinking modes; speech streams sentence-by-sentence with barge-in interruption.'],
-      ['argus', 'Gemini 2.5 Flash plus semantic embeddings: over 85% match accuracy with sub-3-second responses.'],
-      ['proposalpilot', "Drafts in the freelancer's voice across OpenAI, Anthropic and Gemini; the AI layer is pure functions, unit-tested in Node."],
-    ] },
-    software: { label: 'Software', ranked: [
-      ['mentormatch', 'Production work on a live platform: a security-definer plpgsql RPC under row-level security, then a 92-file refactor verified for byte-level behaviour parity.'],
-      ['duetplanner', 'One last-write-wins merge-by-id algorithm, implemented identically on client and server; a 319-line Node backend with zero packages.'],
-      ['argus', 'Full stack in a cross-university team of four: Next.js and React on the front end, FastAPI and Python on the back end.'],
-      ['proposalpilot', 'Chrome MV3 with no backend; inserts drafts through the native value setter so React-controlled textareas accept them.'],
-      ['peppa', '16,400+ lines with 242 tests.'],
-      ['petal', '144 Kotlin files in a data/domain/presentation split.'],
-    ] },
-    robotics: { label: 'Robotics', ranked: [
-      ['peppa', 'Sub-2-second voice-to-voice latency, barge-in interruption, and a deterministic reflex layer that keeps working with the LLM runtime offline.'],
-      ['neondrift', 'A hand-rolled physics loop holding a 60 FPS render target.'],
-      ['tejimola', 'A dspTime-based rhythm engine inside event-driven systems.'],
-    ] },
-  };
-
-  // --- FLIP (reuses the old cancel-before-measure logic) ---
-  const flipTimers = new WeakMap();
-  const isShown = (it) => !it.hasAttribute('hidden') && !(it.parentElement && it.parentElement.hasAttribute('hidden'));
-  function flip(mutate) {
-    items.forEach((it) => {
-      const t = flipTimers.get(it);
-      if (t !== undefined) { clearTimeout(t); flipTimers.delete(it); }
-      it.classList.remove('flip-move');
-      it.style.transform = '';
-      it.style.opacity = '';
-    });
-    if (reducedMotion) { mutate(); return; }
-    const first = new Map(items.filter(isShown).map((it) => [it, it.getBoundingClientRect().top]));
-    mutate();
-    items.filter(isShown).forEach((it) => {
-      const before = first.get(it);
-      if (before === undefined) {
-        it.style.opacity = '0';
-        requestAnimationFrame(() => {
-          it.classList.add('flip-move');
-          it.style.opacity = '1';
-          flipTimers.set(it, setTimeout(() => { it.classList.remove('flip-move'); it.style.opacity = ''; flipTimers.delete(it); }, 300));
-        });
-        return;
-      }
-      const delta = before - it.getBoundingClientRect().top;
-      if (Math.abs(delta) < 2) return;
-      it.style.transform = `translateY(${delta}px)`;
-      requestAnimationFrame(() => {
-        it.classList.add('flip-move');
-        it.style.transform = '';
-        flipTimers.set(it, setTimeout(() => { it.classList.remove('flip-move'); flipTimers.delete(it); }, 300));
-      });
-    });
+  const facts = $('facts');
+  function openDrawer(d) {
+    if (!d || d.open) return;
+    if (typeof d.showModal === 'function') d.showModal(); else d.setAttribute('open', '');
   }
-
-  function updateCount() {
-    const n = items.filter((it) => !it.hasAttribute('hidden')).length;
-    countEl.textContent = n === total ? `${total} of ${total} shown` : `${pad2(n)} of ${total} shown`;
-  }
-
-  function clearReasons() {
-    items.forEach((it) => {
-      const r = it.querySelector('.reason');
-      r.hidden = true;
-      r.classList.remove('fade-in');
-      r.textContent = '';
-    });
-  }
-
-  let currentLens = 'all';
-  function arrangeLens(name) {
-    clearReasons();
-    items.forEach((it) => it.removeAttribute('hidden'));
-    chipRow.hidden = true;
-    if (name === 'all' || !LENSES[name]) {
-      items.forEach((it) => workIndex.appendChild(it));
-      workLead.hidden = true;
-      alsoHead.hidden = true;
-      ruleNote.hidden = true;
-      lensNote.hidden = true;
-      return;
-    }
-    const lens = LENSES[name];
-    const rankedSlugs = lens.ranked.map((r) => r[0]);
-    lens.ranked.forEach(([slug, why]) => {
-      const it = bySlug.get(slug);
-      workLead.appendChild(it);
-      const r = it.querySelector('.reason');
-      const lab = document.createElement('span');
-      lab.className = 'label';
-      lab.textContent = `Why it's here for ${lens.label}`;
-      const p = document.createElement('p');
-      p.textContent = why;
-      r.appendChild(lab);
-      r.appendChild(p);
-      r.hidden = false;
-      if (!reducedMotion) r.classList.add('fade-in');
-    });
-    items.forEach((it) => { if (!rankedSlugs.includes(slugOf(it))) workIndex.appendChild(it); });
-    workLead.hidden = false;
-    alsoHead.hidden = false;
-    ruleNote.hidden = false;
-    lensNote.hidden = name !== 'robotics';
-  }
-
-  function setLens(name, { send = true, hash = true } = {}) {
-    if (!LENSES[name]) name = 'all';
-    currentLens = name;
-    lensRadios.forEach((r) => { r.checked = r.value === name; });
-    flip(() => arrangeLens(name));
-    updateCount();
-    if (hash) history.replaceState(null, '', name === 'all' ? '#work' : `#work=lens:${name}`);
-    if (send) beacon('filter', 'lens:' + name);
-  }
-  lensRadios.forEach((r) => r.addEventListener('change', () => { if (r.checked) setLens(r.value); }));
-
-  function applyFilter(pred, label) {
-    // filters always read against the default order
-    if (currentLens !== 'all') {
-      currentLens = 'all';
-      lensRadios.forEach((r) => { r.checked = r.value === 'all'; });
-      arrangeLens('all');
-    }
-    flip(() => {
-      items.forEach((it) => { if (pred(it)) it.removeAttribute('hidden'); else it.setAttribute('hidden', ''); });
-    });
-    chipLabel.textContent = `Showing: ${label}`;
-    chipClear.setAttribute('aria-label', `Clear filter: ${label}`);
-    chipRow.hidden = false;
-    updateCount();
-  }
-  function filterByStack(token, label, updateHash = true) {
-    applyFilter((it) => (` ${it.dataset.stack} `).includes(` ${token} `), label);
-    if (updateHash) history.replaceState(null, '', `#work=stack:${token}`);
-  }
-  function filterByTerm(term, label, updateHash = true) {
-    applyFilter((it) => (` ${it.dataset.terms} `).includes(` ${term} `), label);
-    if (updateHash) history.replaceState(null, '', `#work=term:${term}`);
-  }
-  chipClear.addEventListener('click', () => {
-    setLens('all', { send: false });
-    const first = lensRadios.find((r) => r.value === 'all');
-    if (first) first.focus();
-  });
-
-  const termLabels = {};
-  document.querySelectorAll('button[data-term]').forEach((b) => {
-    termLabels[b.dataset.term] = b.dataset.label;
+  document.querySelectorAll('[data-case]').forEach((b) => {
     b.addEventListener('click', () => {
-      filterByTerm(b.dataset.term, b.dataset.label);
-      beacon('filter', 'term:' + b.dataset.term);
-      scrollToEl($('work'), $('work-h'));
+      const d = $('p-' + b.dataset.case);
+      openDrawer(d);
+      history.replaceState(null, '', '#p-' + b.dataset.case);
+      beacon('project', b.dataset.case);
+    });
+  });
+  $('factsBtn').addEventListener('click', () => { openDrawer(facts); beacon('filter', 'facts:open'); });
+  document.querySelectorAll('dialog.drawer').forEach((d) => {
+    d.querySelectorAll('[data-close]').forEach((c) => c.addEventListener('click', () => d.close()));
+    d.addEventListener('click', (e) => { if (e.target === d) d.close(); });
+    d.addEventListener('close', () => { if (location.hash.startsWith('#p-')) history.replaceState(null, '', location.pathname + location.search); });
+  });
+
+  // in-page links scroll to the middle of a scene, where it is fully composed
+  const sceneIndex = (id) => scenes.findIndex((s) => s.id === id);
+  document.querySelectorAll('a[href^="#"]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href').slice(1);
+      const i = sceneIndex(id);
+      if (i < 0) return;
+      e.preventDefault();
+      scrollToScene(i);
     });
   });
 
-  // --- Tools: project names computed from the index, checked against the HTML ---
-  document.querySelectorAll('button.skill').forEach((btn) => {
-    const token = btn.dataset.skill;
-    const name = btn.querySelector('.s-name').textContent.trim();
-    const using = items.filter((it) => (` ${it.dataset.stack} `).includes(` ${token} `)).map((it) => it.dataset.name);
-    const use = btn.querySelector('.s-use');
-    const computed = using.join(', ');
-    if (use.textContent.trim() !== computed) {
-      console.warn(`Tools: "${name}" lists "${use.textContent.trim()}" but the index says "${computed}".`);
-      use.textContent = computed;
-    }
-    if (using.length === 0) {
-      const span = document.createElement('span');
-      span.className = 'skill plain';
-      span.innerHTML = btn.innerHTML;
-      btn.replaceWith(span);
-      return;
-    }
-    btn.addEventListener('click', () => {
-      filterByStack(token, name);
-      scrollToEl($('work'), $('work-h'));
-      beacon('skill', token);
-    });
-  });
-
-  // --- Case files: a 'project' beacon only when a person opens one ---
-  const cases = Array.from(document.querySelectorAll('.case'));
-  cases.forEach((d) => {
-    const summary = d.querySelector('summary');
-    summary.addEventListener('click', () => { d._user = true; });
-    d.addEventListener('toggle', () => {
-      if (d.open) {
-        draw(d.querySelector('.flow'));
-        if (d._user) beacon('project', d.closest('article').id.replace(/^p-/, ''));
+  // ---------- copy email ----------
+  const copyStatus = $('copyStatus');
+  document.querySelectorAll('.copy-email').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.email);
+        btn.textContent = 'Copied';
+        copyStatus.textContent = 'Email copied to clipboard';
+        setTimeout(() => { btn.textContent = 'Copy'; copyStatus.textContent = ''; }, 1600);
+      } catch (e) {
+        location.href = 'mailto:' + btn.dataset.email;
       }
-      d._user = false;
-      syncOpenAll();
-    });
-  });
-  function syncOpenAll() {
-    const allOpen = cases.every((d) => d.open);
-    openAllBtn.setAttribute('aria-pressed', String(allOpen));
-    openAllBtn.textContent = allOpen ? 'Close all case files' : 'Open all case files';
-  }
-  openAllBtn.addEventListener('click', () => {
-    const open = openAllBtn.getAttribute('aria-pressed') !== 'true';
-    cases.forEach((d) => { d._user = false; d.open = open; });
-    syncOpenAll();
-    beacon('filter', open ? 'cases:open' : 'cases:close');
-  });
-
-  function openProject(id, focusIt) {
-    const art = $(id);
-    if (!art) return;
-    const d = art.querySelector('.case');
-    if (d) { d._user = false; d.open = true; }
-    scrollToEl(art, focusIt ? art.querySelector('h3') : null);
-  }
-  document.querySelectorAll('[data-open]').forEach((a) => {
-    a.addEventListener('click', (e) => {
-      e.preventDefault();
-      history.replaceState(null, '', '#' + a.dataset.open);
-      openProject(a.dataset.open, true);
-    });
-  });
-  document.querySelectorAll('[data-focus]').forEach((a) => {
-    a.addEventListener('click', (e) => {
-      e.preventDefault();
-      const sec = $(a.dataset.focus);
-      history.replaceState(null, '', '#' + a.dataset.focus);
-      scrollToEl(sec, sec.querySelector('h2'));
+      beacon('copy_email', '');
     });
   });
 
-  // --- Restore state from the URL hash (old links keep working) ---
-  (function initFromHash() {
+  // ---------- old links keep working ----------
+  function route() {
     let h;
-    try {
-      h = decodeURIComponent(location.hash.slice(1));
-    } catch (e) {
-      h = ''; // malformed percent-encoding in a shared link
-    }
-    const legacy = { ai: 'nlp', web: 'software', games: 'all', mobile: 'all', all: 'all' };
-    let handled = false;
-    if (h.startsWith('work=lens:')) { setLens(h.slice(10), { send: false, hash: false }); handled = true; }
-    else if (h.startsWith('work=stack:')) {
-      const token = h.slice('work=stack:'.length);
-      const btn = document.querySelector(`button.skill[data-skill="${CSS.escape(token)}"]`);
-      if (btn) filterByStack(token, btn.querySelector('.s-name').textContent.trim(), false);
-      handled = true;
-    } else if (h.startsWith('work=term:')) {
-      const t = h.slice('work=term:'.length);
-      if (termLabels[t]) filterByTerm(t, termLabels[t], false);
-      handled = true;
-    } else if (h.startsWith('work=')) {
-      const cat = h.slice(5);
-      if (legacy[cat]) setLens(legacy[cat], { send: false, hash: false });
-      handled = true;
-    } else if (h.startsWith('p-')) {
-      const art = $(h);
-      if (art) openProject(h, false);
-    }
-    if (handled) setTimeout(() => $('work').scrollIntoView({ block: 'start' }), 0);
-  })();
-  updateCount();
-  syncOpenAll();
+    try { h = decodeURIComponent(location.hash.slice(1)); } catch (e) { h = ''; }
+    if (!h) return;
+    const lead = ['peppa', 'argus', 'mentormatch'];
+    const go = (i) => setTimeout(() => { measure(); scrollToScene(i, true); if (!RM) sSmooth = sceneFloat(); }, 0);
+    if (h.startsWith('p-')) {
+      const slug = h.slice(2);
+      const d = $(h);
+      if (d) { go(sceneIndex(lead.includes(slug) ? slug : 'more')); setTimeout(() => openDrawer(d), 350); }
+    } else if (h === 'brief') { setTimeout(() => openDrawer(facts), 200); }
+    else if (h.startsWith('work')) go(sceneIndex('peppa'));
+    else if (h === 'chess' || h === 'offhours') go(sceneIndex('offhours'));
+    else if (sceneIndex(h) >= 0) go(sceneIndex(h));
+  }
+  route();
+  window.addEventListener('hashchange', route);
+
+  // ---------- start ----------
+  if (RM) {
+    staticColours();
+    const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+      if (e.isIntersecting && !seen.has(e.target.id)) { seen.add(e.target.id); beacon('section', e.target.id); }
+    }), { threshold: 0.35 });
+    scenes.forEach((sc) => io.observe(sc));
+  } else {
+    sizeCanvas();
+    requestAnimationFrame((t) => { lastT = t; frame(t); });
+  }
 
   // ==========================================================
   // CHESS — live correspondence board (visitor plays White)
+  // Backend contract unchanged: GET /api/game, POST /api/move, POST /api/reset
   // ==========================================================
   const board = $('chessboard');
   const piecesEl = $('cbPieces');
   const statusEl = $('chessStatus');
-  const movesEl = $('chessMoves');
-  const movesWrap = $('movesWrap');
-  const figEl = $('chessFig');
   const resetBtn = $('chessReset');
-  const indicator = $('chessInd');
 
   if (board) {
     const FILES = 'abcdefgh';
@@ -550,7 +510,6 @@ document.addEventListener('DOMContentLoaded', () => {
       for (let f = 0; f < 8; f++) { b[sq(f, 1)] = { t: 'P', c: 'b' }; b[sq(f, 6)] = { t: 'P', c: 'w' }; }
       return b;
     }
-
     function pathClear(b, f1, r1, f2, r2) {
       const df = Math.sign(f2 - f1), dr = Math.sign(r2 - r1);
       let f = f1 + df, r = r1 + dr;
@@ -560,7 +519,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return true;
     }
-
     // House rules: no castling, no en passant, kings may be captured.
     function isLegal(b, from, to, color) {
       const [f1, r1] = from, [f2, r2] = to;
@@ -587,7 +545,6 @@ document.addEventListener('DOMContentLoaded', () => {
         default: return false;
       }
     }
-
     // Replay a move list from the start position -> {b, turn, status}
     function replay(moves) {
       const b = startBoard();
@@ -639,6 +596,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const pieceLayer = {};
     let current = startBoard();
+    let lastMove = null;
+    let selected = null;
 
     function makePiece(p) {
       const svg = document.createElementNS(SVGNS, 'svg');
@@ -650,10 +609,6 @@ document.addEventListener('DOMContentLoaded', () => {
       piecesEl.appendChild(svg);
       return svg;
     }
-
-    let lastMove = null;
-    let selected = null;
-
     function labelSquares() {
       squares.forEach((cell) => {
         const f = +cell.dataset.f, r = +cell.dataset.r;
@@ -665,19 +620,15 @@ document.addEventListener('DOMContentLoaded', () => {
         cell.setAttribute('aria-label', label);
       });
     }
-
     function markLast() {
       squares.forEach((c) => c.classList.remove('cb-last'));
       if (!lastMove) return;
       squareAt(lastMove.f[0], lastMove.f[1]).classList.add('cb-last');
       squareAt(lastMove.t[0], lastMove.t[1]).classList.add('cb-last');
     }
-
     function render(b) {
       current = b;
-      Object.keys(pieceLayer).forEach((k) => {
-        if (!b[k]) { pieceLayer[k].remove(); delete pieceLayer[k]; }
-      });
+      Object.keys(pieceLayer).forEach((k) => { if (!b[k]) { pieceLayer[k].remove(); delete pieceLayer[k]; } });
       Object.entries(b).forEach(([k, p]) => {
         const [f, r] = k.split(',').map(Number);
         let el = pieceLayer[k];
@@ -690,7 +641,6 @@ document.addEventListener('DOMContentLoaded', () => {
       markLast();
       labelSquares();
     }
-
     // Move a piece with animation (used for smooth transitions)
     function animateMove(m, isReply) {
       const from = sq(m.f[0], m.f[1]), to = sq(m.t[0], m.t[1]);
@@ -698,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!el) return;
       if (pieceLayer[to]) {
         const captured = pieceLayer[to];
-        if (reducedMotion) captured.remove();
+        if (RM) captured.remove();
         else { captured.classList.add('gone'); setTimeout(() => captured.remove(), 130); }
       }
       delete pieceLayer[from];
@@ -706,22 +656,6 @@ document.addEventListener('DOMContentLoaded', () => {
       el.classList.toggle('cb-reply', !!isReply);
       el.style.setProperty('--f', m.t[0]);
       el.style.setProperty('--r', m.t[1]);
-    }
-
-    function renderMoves(moves) {
-      movesEl.textContent = '';
-      for (let i = 0; i < moves.length; i += 2) {
-        const tr = document.createElement('tr');
-        const cells = [
-          String(i / 2 + 1),
-          `${coord(...moves[i].f)}–${coord(...moves[i].t)}`,
-          moves[i + 1] ? `${coord(...moves[i + 1].f)}–${coord(...moves[i + 1].t)}` : '',
-        ];
-        cells.forEach((v) => { const td = document.createElement('td'); td.textContent = v; tr.appendChild(td); });
-        movesEl.appendChild(tr);
-      }
-      movesWrap.hidden = moves.length === 0;
-      movesWrap.scrollTop = movesWrap.scrollHeight;
     }
 
     // --- Exhibition fallback: the Italian Game, three moves in ---
@@ -735,11 +669,9 @@ document.addEventListener('DOMContentLoaded', () => {
         { f: [6, 7], t: [5, 5] }, { f: [1, 0], t: [2, 2] },
         { f: [5, 7], t: [2, 4] }, { f: [5, 0], t: [2, 3] },
       ];
-      statusEl.textContent = "The live board's server is resting. Here's the Italian Game, three moves in, while it wakes up.";
-      figEl.textContent = 'Exhibition · the Italian Game, three moves in';
-      movesWrap.hidden = true;
+      statusEl.textContent = "The live board is resting — here's the Italian Game, three moves in.";
       resetBtn.hidden = true;
-      if (reducedMotion) {
+      if (RM) {
         lastMove = MOVES[MOVES.length - 1];
         render(replay(MOVES).b);
       } else {
@@ -757,60 +689,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { threshold: 0.4 });
         io.observe(board);
       }
-      updateIndicator();
     }
 
     // --- Live game ---
     let game = null;
     let waitingNoted = false;
-
-    function myTurn() {
-      return game && game.status === 'active' && game.moves.length % 2 === 0;
-    }
-
-    function updateIndicator() {
-      const st = game ? replay(game.moves).status : null;
-      const show = live && game && st === 'active' && game.moves.length > 0;
-      if (!show) { indicator.hidden = true; indicator.classList.remove('show'); return; }
-      const wasHidden = indicator.hidden;
-      indicator.textContent = '';
-      if (myTurn()) {
-        const d = document.createElement('span');
-        d.className = 'dot';
-        d.setAttribute('aria-hidden', 'true');
-        indicator.appendChild(d);
-        indicator.appendChild(document.createTextNode('Your move'));
-        indicator.classList.remove('waiting');
-        indicator.setAttribute('aria-label', 'Chess: your move');
-      } else {
-        indicator.appendChild(document.createTextNode('Move sent'));
-        indicator.classList.add('waiting');
-        indicator.setAttribute('aria-label', 'Chess: waiting for my reply');
-      }
-      indicator.hidden = false;
-      if (wasHidden && !reducedMotion) indicator.classList.add('show');
-    }
-
+    function myTurn() { return game && game.status === 'active' && game.moves.length % 2 === 0; }
     function updateUI() {
       const { b, status } = replay(game.moves);
       lastMove = game.moves.length ? game.moves[game.moves.length - 1] : null;
       render(b);
-      renderMoves(game.moves);
       resetBtn.hidden = game.moves.length === 0 && status === 'active';
-      figEl.textContent = 'Open challenge · you play White';
       if (status === 'won_v') statusEl.textContent = 'You took my king. Well played — rematch?';
       else if (status === 'won_o') statusEl.textContent = 'Got your king. Good game — rematch?';
       else if (myTurn()) {
         if (game.moves.length) {
           const m = game.moves[game.moves.length - 1];
           statusEl.textContent = `I played ${coord(...m.f)} to ${coord(...m.t)}. Your move.`;
-        } else statusEl.textContent = 'Your move. Pick a white piece.';
+        } else statusEl.textContent = 'Pick a white piece to begin.';
         waitingNoted = false;
       } else statusEl.textContent = 'Sent. The move is on my desk — check back soon.';
       if (status !== 'active') resetBtn.hidden = false;
-      updateIndicator();
     }
-
     async function api(path, payload) {
       const res = await fetch(`${PULSE}${path}`, payload ? {
         method: 'POST',
@@ -820,7 +720,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!res.ok) throw new Error(`pulse ${res.status}`);
       return res.json();
     }
-
     // While waiting on the owner's reply, quietly poll so an open tab
     // sees the response without a refresh.
     let pollTimer;
@@ -841,23 +740,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function schedulePoll() {
       clearInterval(pollTimer);
-      pollTimer = setInterval(() => {
-        if (document.hidden || !game) return;
-        checkForReply();
-      }, 45000);
+      pollTimer = setInterval(() => { if (!document.hidden && game) checkForReply(); }, 45000);
     }
     document.addEventListener('visibilitychange', () => {
       if (document.hidden || !game || !live) return;
       if (replay(game.moves).status !== 'active' || myTurn()) return;
       if (Date.now() - lastCheck > 20000) checkForReply();
     });
-
     function clearSelection() {
       selected = null;
       squares.forEach((c) => c.classList.remove('cb-selected', 'cb-target', 'cb-cap'));
       labelSquares();
     }
-
     async function onSquare(cell) {
       if (!game || !live) return;
       if (!myTurn()) {
@@ -901,7 +795,6 @@ document.addEventListener('DOMContentLoaded', () => {
         statusEl.textContent = "Couldn't reach the board — try again in a minute.";
       }
     }
-
     squares.forEach((cell, idx) => {
       cell.addEventListener('click', () => { setFocusSquare(idx, false); onSquare(cell); });
       cell.addEventListener('keydown', (e) => {
@@ -921,7 +814,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setFocusSquare(nr * 8 + nf, true);
       });
     });
-
     resetBtn.addEventListener('click', async () => {
       try {
         game = (await api('/api/reset', { vid })).game;

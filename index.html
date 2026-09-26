@@ -6,10 +6,11 @@
   <meta name="robots" content="noindex, nofollow">
   <title>Akshay Krishna Sirigana — Software, Robotics, NLP</title>
   <meta name="description" content="Akshay Krishna Sirigana — Computer Science Co-op student at McMaster University building AI products end-to-end: local voice assistants, matching engines, extensions, and games.">
-  <meta property="og:title" content="Akshay Krishna Sirigana — Portfolio">
-  <meta property="og:description" content="Software engineer working across robotics, NLP, and the web — building AI products end-to-end. Ten projects, and a live chess board where you play White.">
+  <meta property="og:title" content="Akshay Krishna Sirigana">
+  <meta property="og:description" content="Build the whole thing. Then make it respect its user. Software, robotics and NLP — and a live chess board where you play White.">
   <meta property="og:type" content="website">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cstyle%3Erect%7Bstroke:%237A7E77%7Dcircle%7Bfill:%231B6A4E%7D@media (prefers-color-scheme:dark)%7Brect%7Bstroke:%2371746D%7Dcircle%7Bfill:%2386C3A2%7D%7D%3C/style%3E%3Crect x='10' y='10' width='44' height='44' rx='6' fill='none' stroke-width='4' stroke-dasharray='7 5'/%3E%3Ccircle cx='32' cy='32' r='9'/%3E%3C/svg%3E">
+  <meta name="theme-color" content="#ECE8DF">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23171614'/%3E%3Cg fill='%23ECE8DF'%3E%3Ccircle cx='20' cy='24' r='3'/%3E%3Ccircle cx='32' cy='18' r='3'/%3E%3Ccircle cx='44' cy='24' r='3'/%3E%3Ccircle cx='26' cy='36' r='3'/%3E%3Ccircle cx='38' cy='36' r='3'/%3E%3Ccircle cx='32' cy='47' r='3'/%3E%3C/g%3E%3C/svg%3E">
   <script>
     (function () {
       try {
@@ -20,39 +21,22 @@
         document.documentElement.setAttribute('data-theme', t);
       } catch (e) { /* default stands */ }
       document.documentElement.classList.add('js');
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('rm');
     })();
   </script>
-  <link rel="preload" href="fonts/schibsted-grotesk-latin-var.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="fonts/source-serif-4-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/instrument-serif.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/geist-var.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- ============ SPRITE: icons, principle marks, arrowheads, chess pieces ============ -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
     <defs>
       <symbol id="i-out" viewBox="0 0 12 12"><path d="M3 9 9 3M4.5 3H9v4.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-      <symbol id="i-down" viewBox="0 0 12 12"><path d="M6 2v8M2.5 6.5 6 10l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
       <symbol id="i-right" viewBox="0 0 12 12"><path d="M2 6h8M6.5 2.5 10 6 6.5 9.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-      <symbol id="i-up" viewBox="0 0 12 12"><path d="M6 10V2M2.5 5.5 6 2l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-      <symbol id="i-copy" viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 10.5V3h7.5" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
-      <symbol id="i-check" viewBox="0 0 16 16"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-close" viewBox="0 0 16 16"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
       <symbol id="i-sun" viewBox="0 0 18 18"><circle cx="9" cy="9" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 1.5v2M9 14.5v2M1.5 9h2M14.5 9h2M3.7 3.7l1.4 1.4M12.9 12.9l1.4 1.4M3.7 14.3l1.4-1.4M12.9 5.1l1.4-1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
       <symbol id="i-moon" viewBox="0 0 18 18"><path d="M14.5 11.2A6.5 6.5 0 0 1 6.8 3.5a6.5 6.5 0 1 0 7.7 7.7Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
-      <symbol id="i-plus" viewBox="0 0 16 16"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
-      <symbol id="i-lock" viewBox="0 0 12 12"><rect x="1.5" y="5.5" width="9" height="6" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="M3.5 5.5V4a2.5 2.5 0 0 1 5 0v1.5" fill="none" stroke="currentColor" stroke-width="1.25"/></symbol>
-      <symbol id="i-key" viewBox="0 0 12 12"><circle cx="3.5" cy="6" r="2.5" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="M6 6h5M9 6v2M10.8 6v1.6" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
-
-      <symbol id="m-whole" viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 6h9M5.5 9h9M5.5 12h9M5.5 15h9" stroke="currentColor" stroke-width="1.5"/></symbol>
-      <symbol id="m-local" viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2.5"/><circle cx="10" cy="10" r="3" fill="currentColor"/></symbol>
-      <symbol id="m-key" viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2.5"/><circle cx="7.5" cy="10" r="2.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9.7 10h5M13 10v2M14.7 10v1.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
-      <symbol id="m-zero" viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2.5"/></symbol>
-      <symbol id="m-reason" viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 2.5"/><path d="M5 12.5v3.5l3.5-3.5z" fill="currentColor"/></symbol>
-
-      <marker id="ah-ink" viewBox="0 0 6 6" refX="5.5" refY="3" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 6 3 0 6Z" class="m-ink"/></marker>
-      <marker id="ah-cross" viewBox="0 0 6 6" refX="5.5" refY="3" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 6 3 0 6Z" class="m-cross"/></marker>
-      <marker id="ah-keep" viewBox="0 0 6 6" refX="5.5" refY="3" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0 6 3 0 6Z" class="m-keep"/></marker>
-
       <symbol id="pc-P" viewBox="0 0 40 40"><rect class="pc" x="10" y="31" width="20" height="5" rx="1"/><path class="pc" d="M15 18h10l2 13H13Z"/><circle class="pc" cx="20" cy="12" r="5"/></symbol>
       <symbol id="pc-R" viewBox="0 0 40 40"><rect class="pc" x="10" y="31" width="20" height="5" rx="1"/><rect class="pc" x="13" y="16" width="14" height="15"/><path class="pc" d="M11 8h4v3h3V8h4v3h3V8h4v8H11Z"/></symbol>
       <symbol id="pc-B" viewBox="0 0 40 40"><rect class="pc" x="10" y="31" width="20" height="5" rx="1"/><rect class="pc" x="14" y="27" width="12" height="4"/><ellipse class="pc" cx="20" cy="19" rx="7" ry="9"/><circle class="pc" cx="20" cy="7" r="2"/><path class="pc-slit" d="M18 14l5 5"/></symbol>
@@ -62,965 +46,361 @@
     </defs>
   </svg>
 
-  <a class="skip-link" href="#work">Skip to projects</a>
+  <!-- the point field that morphs from scene to scene -->
+  <canvas id="field" aria-hidden="true"></canvas>
 
-  <!-- ============ STICKY BAR ============ -->
-  <header class="bar" aria-label="Site header">
-    <div class="wrap">
-      <a class="mark" href="#top">
-        <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="2" width="16" height="16" rx="2" fill="none" stroke="var(--boundary)" stroke-width="1.5" stroke-dasharray="3 2.5"/><circle cx="10" cy="10" r="3.5" fill="var(--keep)"/></svg>
-        <span class="full">Akshay Krishna Sirigana</span><span class="short">A. K. Sirigana</span>
-      </a>
-      <div class="bar-right">
-        <nav class="bar-links" aria-label="Sections"><a href="#work">Work</a><a href="#contact">Contact</a></nav>
-        <a class="chess-ind" id="chessInd" href="#chess" hidden></a>
-        <button class="theme-btn" id="themeToggle" type="button" aria-pressed="false" aria-label="Dark theme">
-          <svg class="i-moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
-          <span class="t-text" aria-hidden="true">Dark mode</span>
-        </button>
-        <a class="bar-resume" href="Resume_Krish.pdf" target="_blank" rel="noopener noreferrer">Resume <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-      </div>
-    </div>
+  <header class="top">
+    <a class="name" href="#top">Akshay Krishna Sirigana</a>
+    <nav class="top-r" aria-label="Site">
+      <button class="pill" id="factsBtn" type="button" aria-haspopup="dialog"><span class="lg">Just the facts</span><span class="sm">Facts</span></button>
+      <button class="icon-btn" id="themeToggle" type="button" aria-pressed="false" aria-label="Dark theme">
+        <svg class="i-moon" aria-hidden="true"><use href="#i-moon"/></svg><svg class="i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+      </button>
+      <a class="pill solid" href="Resume_Krish.pdf" target="_blank" rel="noopener noreferrer">Resume <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+    </nav>
   </header>
 
   <main>
-
-    <!-- ============ HERO ============ -->
-    <section class="hero" id="top" aria-labelledby="name">
-      <div class="wrap grid">
-        <div class="hero-text">
-          <p class="status"><span class="dot" aria-hidden="true"></span><span>Open to software, robotics &amp; NLP co-op · McMaster BASc CS (Co-op) 2025–2029 · Hamilton, Ontario</span></p>
-          <h1 id="name"><span>Akshay Krishna</span><span>Sirigana</span></h1>
-          <p class="tagline">Software engineer working across robotics, NLP, and the web — building AI products end-to-end.</p>
-          <p class="recently">Recently: <a href="#p-mentormatch" data-open="p-mentormatch">product engineering at MentorMatch</a>, Jun–Jul 2026 — a live mentorship platform.</p>
-          <div class="actions">
-            <a class="btn btn-primary" href="Resume_Krish.pdf" target="_blank" rel="noopener noreferrer">Resume (PDF) <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-            <a class="btn btn-secondary" href="#brief" data-focus="brief">The 30-second version <svg class="ico" aria-hidden="true"><use href="#i-down"/></svg></a>
-          </div>
-          <div class="actions-2">
-            <a class="email" href="mailto:sirigana@mcmaster.ca">sirigana@mcmaster.ca</a>
-            <button class="tbtn copy-email" type="button" data-email="sirigana@mcmaster.ca"><svg class="ico" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button>
-            <a class="tlink" href="https://github.com/MangoKrish" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-            <a class="tlink" href="https://www.linkedin.com/in/akshay-krishna-sirigana-1b718a380/" target="_blank" rel="noopener noreferrer">LinkedIn <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-          </div>
+    <!-- ============ 0 · OPENING ============ -->
+    <section class="scene" id="top" data-scene="0" aria-label="Introduction">
+      <div class="pin">
+        <div class="copy">
+          <p class="eyebrow rv" data-k="0"><span class="dot" aria-hidden="true"></span>Open to software, robotics &amp; NLP co-op</p>
+          <h1 class="big">
+            <span class="line rv" data-k="1">Build the whole thing.</span>
+            <span class="line rv" data-k="2"><em>Then make it respect its user.</em></span>
+          </h1>
+          <p class="sub rv" data-k="3">I'm Akshay — a Computer Science co-op student at McMaster, building AI products end-to-end.</p>
         </div>
-
-        <div class="hero-fig">
-          <p class="label fig-label">Peppa, drawn: what runs where</p>
-          <figure class="flow" id="fig-hero">
-            <svg class="flow-svg" viewBox="0 0 480 448" aria-hidden="true">
-              <rect class="bd" x="8" y="28" width="464" height="356" rx="12"/>
-              <text class="tl" x="24" y="52">Your laptop</text>
-              <rect class="n" x="24" y="72" width="184" height="32" rx="4"/><text x="116" y="92" text-anchor="middle">Microphone</text>
-              <rect class="n" x="24" y="128" width="184" height="32" rx="4"/><text x="116" y="148" text-anchor="middle">MLX-Whisper</text>
-              <rect class="n" x="24" y="184" width="184" height="48" rx="4"/><text x="116" y="204" text-anchor="middle">Router</text><text x="116" y="220" text-anchor="middle">5 thinking modes</text>
-              <rect class="n" x="24" y="256" width="184" height="32" rx="4"/><text x="116" y="276" text-anchor="middle">On-device TTS</text>
-              <rect class="n" x="24" y="312" width="184" height="32" rx="4"/><text x="116" y="332" text-anchor="middle">Speaker</text>
-              <path class="ln" d="M116 104v22" marker-end="url(#ah-ink)"/><path class="ln" d="M116 160v22" marker-end="url(#ah-ink)"/><path class="ln" d="M116 232v22" marker-end="url(#ah-ink)"/><path class="ln" d="M116 288v22" marker-end="url(#ah-ink)"/>
-              <text class="t2" x="24" y="376">streams sentence by sentence · barge-in</text>
-              <rect class="n" x="240" y="72" width="216" height="32" rx="4"/><text x="348" y="92" text-anchor="middle">14B chat</text>
-              <rect class="n" x="240" y="112" width="216" height="32" rx="4"/><text x="348" y="132" text-anchor="middle">32B reasoning</text>
-              <rect class="n" x="240" y="152" width="216" height="32" rx="4"/><text x="348" y="172" text-anchor="middle">Coder</text>
-              <rect class="n" x="240" y="192" width="216" height="32" rx="4"/><text x="348" y="212" text-anchor="middle">Vision</text>
-              <rect class="n" x="240" y="232" width="216" height="32" rx="4"/><text x="348" y="252" text-anchor="middle">Embeddings</text>
-              <rect class="n" x="240" y="288" width="128" height="32" rx="4"/><text x="304" y="308" text-anchor="middle">Python sandbox</text>
-              <rect class="n" x="376" y="288" width="80" height="32" rx="4"/><text x="416" y="308" text-anchor="middle">Local RAG</text>
-              <rect class="n" x="240" y="328" width="216" height="32" rx="4"/><text x="348" y="348" text-anchor="middle">Deterministic reflex layer</text>
-              <path class="ln" d="M224 88v256M224 88h16M224 128h16M224 168h16M224 208h16M224 248h16M224 304h16M224 344h16M208 208h16"/>
-              <rect class="gh" x="160" y="404" width="160" height="32" rx="4"/><text class="gh-t" x="240" y="424" text-anchor="middle">Cloud API</text>
-              <path class="ln2 dr" pathLength="1" d="M160 436 320 404"/>
-              <text class="tl" x="332" y="425">not used</text>
-            </svg>
-            <div class="flow-list"><p class="fl-label">Your laptop</p><ol>
-              <li>Microphone → MLX-Whisper (speech to text)</li>
-              <li>Router with five thinking modes</li>
-              <li>Models: 14B chat, 32B reasoning, coder, vision, embeddings</li>
-              <li>Tools: Python sandbox, local RAG, and a deterministic reflex layer that answers even with the LLM runtime offline</li>
-              <li>On-device TTS → speaker, streamed sentence by sentence, with barge-in</li>
-              <li class="gr"><s>Cloud API</s> — not used. Nothing leaves the laptop.</li>
-            </ol></div>
-            <figcaption>Five models, one machine, zero cloud.</figcaption>
-          </figure>
-          <p class="fig-metrics">16,400+ lines · 242 tests · 46 tool skills · sub-2-second voice to voice</p>
-          <a class="tlink" href="#p-peppa" data-open="p-peppa">Read the case file <svg class="ico" aria-hidden="true"><use href="#i-down"/></svg></a>
-        </div>
+        <p class="cue rv" data-k="4" aria-hidden="true">Scroll</p>
       </div>
     </section>
 
-    <!-- ============ IN BRIEF ============ -->
-    <section class="section" id="brief" aria-labelledby="brief-h">
-      <div class="wrap">
-        <div class="sec-head">
-          <p class="label">In brief · 30 seconds</p>
-          <h2 id="brief-h" tabindex="-1">The 30-second version.</h2>
-        </div>
-        <dl class="brief">
-          <div><dt>Who</dt><dd>Akshay Krishna Sirigana. BASc Computer Science (Co-op), McMaster University, 2025–2029. Hamilton, Ontario.</dd></div>
-          <div><dt>Looking for</dt><dd>Co-op and internship roles in software engineering, robotics, or NLP.</dd></div>
-          <div><dt>Built</dt><dd>10 projects, 6 with public source. Including Peppa, a fully local voice assistant (16,400+ lines, 242 tests, sub-2-second voice to voice), and Argus, a Mac-a-thon 2026 platform with over 85% match accuracy.</dd></div>
-          <div><dt>Experience</dt><dd>Product engineering at MentorMatch, Jun–Jul 2026 (two-person team, live platform) · Robotics research intern, SysIdea Lab, IIT Gandhinagar, May 2022 · House Captain, Student Council, JNS, 2024.</dd></div>
-          <div><dt>Works in</dt><dd>Python, JavaScript, TypeScript, SQL, C#, Kotlin · React / Next.js, FastAPI, Node.js, Unity · LLM orchestration, semantic embeddings.</dd></div>
-          <div><dt>Believes</dt><dd>Software should respect the person using it: local-first, bring-your-own-key, dependency-free, explainable.</dd></div>
-          <div><dt>Reach</dt><dd class="reach">
-            <a href="mailto:sirigana@mcmaster.ca"><span class="mono">sirigana@mcmaster.ca</span></a>
-            <button class="tbtn copy-email" type="button" data-email="sirigana@mcmaster.ca"><svg class="ico" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button>
-            <a href="https://www.linkedin.com/in/akshay-krishna-sirigana-1b718a380/" target="_blank" rel="noopener noreferrer">LinkedIn <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-            <a href="https://github.com/MangoKrish" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-            <a href="Resume_Krish.pdf" target="_blank" rel="noopener noreferrer">Resume (PDF) <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-          </dd></div>
-        </dl>
-        <p class="brief-foot"><button class="tbtn small" id="copyBrief" type="button"><svg class="ico" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy link to this summary</span></button></p>
-      </div>
-    </section>
-
-    <!-- ============ ABOUT ============ -->
-    <section class="section" id="about" aria-labelledby="about-h">
-      <div class="wrap">
-        <p class="label">About</p>
-        <h2 class="display" id="about-h" style="margin-top:24px"><span>Build the whole thing.</span><span class="l2">Then make it respect its user.</span></h2>
-        <div class="grid">
-          <div class="col-read about-body measure">
-            <p>I'm a Computer Science co-op student at McMaster University who likes building the whole thing — the model, the backend, the interface, and the deploy script. Most of what I make starts with a real person's problem: a freelancer rewriting the same proposal for the tenth time, a student memorizing ninety-four physics formulae, two people planning life across a ten-and-a-half-hour timezone gap.</p>
-            <p>A thread runs through my work: software should respect the person using it. That's why my projects keep turning out local-first, bring-your-own-key, and dependency-free — a voice assistant that never sends audio to a cloud, an extension whose API key never leaves your device, a matching engine that explains its recommendations in plain language instead of exposing raw scores.</p>
-            <p>Right now I'm exploring software engineering, robotics, and natural-language processing — and looking for a co-op team that ships.</p>
-          </div>
-        </div>
-        <h3 class="principles-h">How it shows up in the work</h3>
-        <ol class="principles">
-          <li>
-            <span class="pn">01</span><svg class="pm" aria-hidden="true"><use href="#m-whole"/></svg>
-            <div><h4>Build the whole thing.</h4><p>The model, the backend, the interface, and the deploy script.</p></div>
-            <div class="pa"><a class="tlink" href="#work">See all the work</a></div>
-          </li>
-          <li>
-            <span class="pn">02</span><svg class="pm" aria-hidden="true"><use href="#m-local"/></svg>
-            <div><h4>Keep it on the device.</h4><p>A voice assistant that never sends audio to a cloud.</p></div>
-            <div class="pa"><button class="tbtn" type="button" data-term="local" data-label="Keep it on the device">Shown in Peppa, Petal, Duet</button></div>
-          </li>
-          <li>
-            <span class="pn">03</span><svg class="pm" aria-hidden="true"><use href="#m-key"/></svg>
-            <div><h4>Your key, your call.</h4><p>An extension whose API key never leaves your device.</p></div>
-            <div class="pa"><button class="tbtn" type="button" data-term="byok" data-label="Your key, your call">Shown in ProposalPilot</button></div>
-          </li>
-          <li>
-            <span class="pn">04</span><svg class="pm" aria-hidden="true"><use href="#m-zero"/></svg>
-            <div><h4>Depend on nothing you don't need.</h4><p>Four projects ship with zero runtime dependencies — and so does this page.</p></div>
-            <div class="pa"><button class="tbtn" type="button" data-term="zerodep" data-label="Depend on nothing you don't need">Shown in ProposalPilot, Dimension Dash, Duet, NeonDrift</button><a class="tlink" href="#privacy">How this page works</a></div>
-          </li>
-          <li>
-            <span class="pn">05</span><svg class="pm" aria-hidden="true"><use href="#m-reason"/></svg>
-            <div><h4>Reasons, not scores.</h4><p>A matching engine that explains its recommendations in plain language instead of exposing raw scores.</p></div>
-            <div class="pa"><button class="tbtn" type="button" data-term="reasons" data-label="Reasons, not scores">Shown in MentorMatch</button></div>
-          </li>
-        </ol>
-      </div>
-    </section>
-
-    <!-- ============ THE WORK ============ -->
-    <section class="section" id="work" aria-labelledby="work-h">
-      <div class="wrap">
-        <div class="sec-head">
-          <p class="label">The work · 10 projects</p>
-          <h2 id="work-h" tabindex="-1">Things I've built.</h2>
-        </div>
-
-        <div class="controls">
-          <fieldset class="lens">
-            <legend class="label">Read for a role</legend>
-            <div class="seg">
-              <label><input type="radio" name="lens" value="all" checked><span>Everything</span></label>
-              <label><input type="radio" name="lens" value="software"><span>Software</span></label>
-              <label><input type="radio" name="lens" value="nlp"><span>NLP</span></label>
-              <label><input type="radio" name="lens" value="robotics"><span>Robotics</span></label>
-            </div>
-          </fieldset>
-          <button class="tbtn" id="openAll" type="button" aria-pressed="false">Open all case files</button>
-        </div>
-        <p class="rule-note small" id="ruleNote" hidden>How this order is decided: projects I've written a reason for come first, in the order I ranked them; the rest keep their usual order. No scores, and nothing is learned about you.</p>
-        <div class="chip-row" id="chipRow" hidden><span id="chipLabel"></span><button type="button" id="chipClear" aria-label="Clear filter">×</button></div>
-        <p class="count" id="filterCount" aria-live="polite">10 of 10 shown</p>
-        <p class="legend small">
-          <span class="lg"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="3" width="16" height="14" rx="3" fill="none" stroke="var(--boundary)" stroke-width="1.5" stroke-dasharray="3 2.5"/></svg><span>How to read the drawings: the dashed line is where the data lives.</span></span>
-          <span class="lg"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10h13" stroke="var(--cross)" stroke-width="1.5"/><path d="M13 6.5 18 10l-5 3.5Z" fill="var(--cross)"/></svg><span>Terracotta arrows are the only things that cross it to someone else's system;</span></span>
-          <span class="lg"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10h13" stroke="var(--keep)" stroke-width="1.5"/><path d="M13 6.5 18 10l-5 3.5Z" fill="var(--keep)"/></svg><span>green ones hand something back to you.</span></span>
-        </p>
-        <p class="lens-note" id="lensNote" hidden>My robotics experience so far is research: SysIdea Lab, IIT Gandhinagar (May 2022) — prototyping components with 3D CAD, laser cutting and 3D printing, and debugging at the hardware–software boundary. These projects share its real-time constraints:</p>
-
-        <ol class="work-list" id="workLead" hidden></ol>
-        <h3 class="also-head" id="alsoHead" hidden>Also worth a look</h3>
-        <ol class="work-list" id="workIndex">
-
-          <!-- 01 PEPPA -->
-          <li class="work-item" data-cat="ai" data-stack="python llm embeddings rag" data-terms="local" data-name="Peppa">
-            <article class="project is-lead" id="p-peppa" aria-labelledby="t-peppa">
-              <span class="p-num">01</span>
-              <div class="p-main">
-                <div class="p-head"><h3 id="t-peppa">Peppa <span class="desc">— Local voice assistant</span></h3></div>
-                <p class="p-dek">A Jarvis-style voice assistant that runs entirely on a laptop — no cloud, no API keys, no audio leaving the room.</p>
-                <p class="p-outcome">Sub-2-second voice-to-voice latency, 46 tool skills, and a deterministic reflex layer that keeps it answering even with the LLM runtime fully offline.</p>
-                <p class="p-meta"><span class="stack">Python / MLX / Ollama · 2026</span><span class="p-mark"><svg aria-hidden="true"><use href="#m-local"/></svg>On-device</span></p>
-              </div>
-              <div class="p-side">
-                <ul class="p-metrics"><li>16,400+ lines</li><li>242 tests</li><li>46 tool skills</li><li>5 local models</li></ul>
-                <span class="p-status">Local-only build</span>
-                <p class="p-links"><a href="mailto:sirigana@mcmaster.ca?subject=Peppa%20demo">Ask for a demo</a></p>
-              </div>
-              <div class="reason" hidden></div>
-              <details class="case">
-                <summary><span class="cs-t">Case file</span><span class="cs-s">problem, approach, stack, outcome</span><svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-                <div class="case-body">
-                  <div>
-                    <dl class="case-dl">
-                      <div><dt>Problem</dt><dd>Voice assistants ship your voice, questions, and files to someone else's servers. I wanted Jarvis-grade help with nothing leaving the machine.</dd></div>
-                      <div><dt>Approach</dt><dd>Five on-device models (14B chat, 32B reasoning, coder, vision, embeddings) behind a router with five thinking modes — the deepest one plans, investigates with tools, then has a second model red-team the draft before it's spoken. Speech streams sentence-by-sentence while the answer is still generating, with barge-in interruption. For arithmetic it refuses to guess in-weights and instead writes and runs Python in a sandbox.</dd></div>
-                      <div><dt>Stack</dt><dd>Python 3.12 · Ollama (Qwen2.5) · MLX-Whisper · on-device TTS voice cloning · PySide6 · local RAG · sandboxed code execution</dd></div>
-                      <div><dt>Outcome</dt><dd>Sub-2-second voice-to-voice latency, 46 tool skills, and a deterministic reflex layer that keeps it answering even with the LLM runtime fully offline.</dd></div>
-                    </dl>
-                    <table class="case-table"><caption class="visually-hidden">Peppa in numbers</caption><tbody><tr><td>16,400+ lines</td><td>242 tests</td></tr><tr><td>46 skills</td><td>5 local models</td></tr></tbody></table>
-                    <!-- Demo slot: add only when Akshay supplies the file.
-                    <figure class="demo"><video src="peppa-demo.mp4" poster="peppa-demo.jpg" preload="none" controls></video><figcaption>Peppa, a short demo.</figcaption></figure> -->
-                  </div>
-                  <figure class="flow" id="fig-peppa">
-                    <svg class="flow-svg" viewBox="0 0 480 448" aria-hidden="true">
-                      <rect class="bd" x="8" y="28" width="464" height="356" rx="12"/>
-                      <text class="tl" x="24" y="52">Your laptop</text>
-                      <rect class="n" x="24" y="72" width="184" height="32" rx="4"/><text x="116" y="92" text-anchor="middle">Microphone</text>
-                      <rect class="n" x="24" y="128" width="184" height="32" rx="4"/><text x="116" y="148" text-anchor="middle">MLX-Whisper</text>
-                      <rect class="n" x="24" y="184" width="184" height="48" rx="4"/><text x="116" y="204" text-anchor="middle">Router</text><text x="116" y="220" text-anchor="middle">5 thinking modes</text>
-                      <rect class="n" x="24" y="256" width="184" height="32" rx="4"/><text x="116" y="276" text-anchor="middle">On-device TTS</text>
-                      <rect class="n" x="24" y="312" width="184" height="32" rx="4"/><text x="116" y="332" text-anchor="middle">Speaker</text>
-                      <path class="ln" d="M116 104v22" marker-end="url(#ah-ink)"/><path class="ln" d="M116 160v22" marker-end="url(#ah-ink)"/><path class="ln" d="M116 232v22" marker-end="url(#ah-ink)"/><path class="ln" d="M116 288v22" marker-end="url(#ah-ink)"/>
-                      <text class="t2" x="24" y="376">streams sentence by sentence · barge-in</text>
-                      <rect class="n" x="240" y="72" width="216" height="32" rx="4"/><text x="348" y="92" text-anchor="middle">14B chat</text>
-                      <rect class="n" x="240" y="112" width="216" height="32" rx="4"/><text x="348" y="132" text-anchor="middle">32B reasoning</text>
-                      <rect class="n" x="240" y="152" width="216" height="32" rx="4"/><text x="348" y="172" text-anchor="middle">Coder</text>
-                      <rect class="n" x="240" y="192" width="216" height="32" rx="4"/><text x="348" y="212" text-anchor="middle">Vision</text>
-                      <rect class="n" x="240" y="232" width="216" height="32" rx="4"/><text x="348" y="252" text-anchor="middle">Embeddings</text>
-                      <rect class="n" x="240" y="288" width="128" height="32" rx="4"/><text x="304" y="308" text-anchor="middle">Python sandbox</text>
-                      <rect class="n" x="376" y="288" width="80" height="32" rx="4"/><text x="416" y="308" text-anchor="middle">Local RAG</text>
-                      <rect class="n" x="240" y="328" width="216" height="32" rx="4"/><text x="348" y="348" text-anchor="middle">Deterministic reflex layer</text>
-                      <path class="ln" d="M224 88v256M224 88h16M224 128h16M224 168h16M224 208h16M224 248h16M224 304h16M224 344h16M208 208h16"/>
-                      <rect class="gh" x="160" y="404" width="160" height="32" rx="4"/><text class="gh-t" x="240" y="424" text-anchor="middle">Cloud API</text>
-                      <path class="ln2 dr" pathLength="1" d="M160 436 320 404"/>
-                      <text class="tl" x="332" y="425">not used</text>
-                    </svg>
-                    <div class="flow-list"><p class="fl-label">Your laptop</p><ol>
-                      <li>Microphone → MLX-Whisper (speech to text)</li>
-                      <li>Router with five thinking modes</li>
-                      <li>Models: 14B chat, 32B reasoning, coder, vision, embeddings</li>
-                      <li>Tools: Python sandbox, local RAG, and a deterministic reflex layer that answers even with the LLM runtime offline</li>
-                      <li>On-device TTS → speaker, streamed sentence by sentence, with barge-in</li>
-                      <li class="gr"><s>Cloud API</s> — not used. Nothing leaves the laptop.</li>
-                    </ol></div>
-                    <figcaption>Five models, one machine, zero cloud.</figcaption>
-                  </figure>
-                </div>
-              </details>
-            </article>
-          </li>
-
-          <!-- 02 ARGUS -->
-          <li class="work-item" data-cat="ai" data-stack="python react nextjs threejs tailwind fastapi gemini embeddings llm" data-terms="" data-name="Argus">
-            <article class="project is-lead" id="p-argus" aria-labelledby="t-argus">
-              <span class="p-num">02</span>
-              <div class="p-main">
-                <div class="p-head"><h3 id="t-argus">Argus <span class="desc">— Government intelligence platform</span></h3></div>
-                <p class="p-dek">Know what governments need before they post the RFP.</p>
-                <p class="p-outcome">85%+ match accuracy with sub-3-second responses. Built at Mac-a-thon 2026 with a cross-university team of four (McMaster, TMU, UofT).</p>
-                <p class="p-meta"><span class="stack">Next.js / FastAPI / Gemini · Feb 2026 · Mac-a-thon</span><span class="p-mark x">Calls a hosted model</span></p>
-              </div>
-              <div class="p-side">
-                <ul class="p-metrics"><li>&gt;85% match accuracy</li><li>&lt;3 s response</li><li>Live signals</li><li>Team of 4</li></ul>
-                <p class="p-links">
-                  <a href="https://argus-macathon.vercel.app/" target="_blank" rel="noopener noreferrer">Live demo <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-                  <a href="https://github.com/dunura13/Argus" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-                  <a href="https://devpost.com/software/argus-uipa2c" target="_blank" rel="noopener noreferrer">Devpost <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-                </p>
-              </div>
-              <div class="reason" hidden></div>
-              <details class="case">
-                <summary><span class="cs-t">Case file</span><span class="cs-s">problem, approach, stack, outcome</span><svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-                <div class="case-body">
-                  <div>
-                    <dl class="case-dl">
-                      <div><dt>Problem</dt><dd>Startups discover government procurement opportunities after the RFP drops — too late to prepare or shape the bid.</dd></div>
-                      <div><dt>Approach</dt><dd>Monitor procurement signals in real time, match them to startup capability profiles using Gemini 2.5 Flash plus semantic embeddings, and generate personalized outreach — all visualized on an interactive Three.js globe of live global signals.</dd></div>
-                      <div><dt>Stack</dt><dd>Next.js · React · Three.js · Tailwind · Framer Motion · FastAPI · Python · Gemini 2.5 Flash · semantic embeddings</dd></div>
-                      <div><dt>Outcome</dt><dd>85%+ match accuracy with sub-3-second responses. Built at Mac-a-thon 2026 with a cross-university team of four (McMaster, TMU, UofT).</dd></div>
-                    </dl>
-                    <table class="case-table"><caption class="visually-hidden">Argus in numbers</caption><tbody><tr><td>&gt;85% accuracy</td><td>&lt;3 s response</td></tr><tr><td>Live signals</td><td>Team of 4</td></tr></tbody></table>
-                  </div>
-                  <figure class="flow" id="fig-argus">
-                    <svg class="flow-svg" viewBox="0 0 480 412" aria-hidden="true">
-                      <rect class="bd" x="88" y="28" width="296" height="364" rx="12"/>
-                      <text class="tl" x="104" y="52">Argus app</text>
-                      <rect class="n" x="4" y="72" width="80" height="48" rx="4"/><text x="44" y="92" text-anchor="middle" style="font-size:11px">Procurement</text><text x="44" y="108" text-anchor="middle" style="font-size:11px">signals</text>
-                      <path class="ln" d="M84 96h18" marker-end="url(#ah-ink)"/>
-                      <rect class="n" x="104" y="80" width="144" height="32" rx="4"/><text x="176" y="100" text-anchor="middle">FastAPI · Python</text>
-                      <path class="ln" d="M176 112v22" marker-end="url(#ah-ink)"/>
-                      <rect class="n" x="104" y="136" width="176" height="48" rx="4"/><text x="192" y="156" text-anchor="middle">Matching</text><text x="192" y="172" text-anchor="middle">semantic embeddings</text>
-                      <path class="ln" d="M192 184v22" marker-end="url(#ah-ink)"/>
-                      <rect class="n" x="104" y="208" width="200" height="32" rx="4"/><text x="204" y="228" text-anchor="middle">Matched startup profiles</text>
-                      <path class="ln" d="M204 240v22" marker-end="url(#ah-ink)"/>
-                      <rect class="n" x="104" y="264" width="200" height="32" rx="4"/><text x="204" y="284" text-anchor="middle">Personalised outreach</text>
-                      <path class="ln" d="M204 296v14" marker-end="url(#ah-ink)"/>
-                      <rect class="n" x="104" y="312" width="264" height="48" rx="4"/><text x="236" y="332" text-anchor="middle">Next.js · React front end</text><text x="236" y="348" text-anchor="middle">Three.js globe of live signals</text>
-                      <text class="t2" x="104" y="382">over 85% match accuracy · under 3 s</text>
-                      <rect class="n" x="392" y="128" width="84" height="56" rx="4"/><text x="434" y="146" text-anchor="middle" style="font-size:11px">Gemini</text><text x="434" y="160" text-anchor="middle" style="font-size:11px">2.5 Flash</text><text class="t2" x="434" y="175" text-anchor="middle">(hosted)</text>
-                      <text class="tx" x="336" y="140" text-anchor="middle" style="font-size:11px">match requests</text>
-                      <path class="xa dr" pathLength="1" style="--i:0" d="M280 150h110" marker-end="url(#ah-cross)"/>
-                      <path class="ln" d="M391 170H282" marker-end="url(#ah-ink)"/>
-                    </svg>
-                    <div class="flow-list"><p class="fl-label">Argus app</p><ol>
-                      <li>Procurement signals → FastAPI (Python)</li>
-                      <li>Matching with semantic embeddings</li>
-                      <li>Matched startup profiles → personalised outreach</li>
-                      <li>Shown on a Next.js / React front end with a Three.js globe of live signals</li>
-                      <li class="cr">Match requests go to Gemini 2.5 Flash, a hosted model.</li>
-                    </ol></div>
-                    <figcaption>Signals <svg class="ico" aria-hidden="true"><use href="#i-right"/></svg> capabilities <svg class="ico" aria-hidden="true"><use href="#i-right"/></svg> outreach.</figcaption>
-                  </figure>
-                </div>
-              </details>
-            </article>
-          </li>
-
-          <!-- 03 MENTORMATCH -->
-          <li class="work-item" data-cat="web" data-stack="react typescript sql supabase vite" data-terms="reasons" data-name="MentorMatch">
-            <article class="project is-lead" id="p-mentormatch" aria-labelledby="t-mentormatch">
-              <span class="p-num">03</span>
-              <div class="p-main">
-                <div class="p-head"><h3 id="t-mentormatch">MentorMatch <span class="desc">— Explainable matching engine</span></h3></div>
-                <p class="p-dek">A mentor-recommendation engine that lives inside Postgres and gives students reasons, never raw scores.</p>
-                <p class="p-outcome">644 lines of SQL across 4 migrations; a 92-file refactor (+6,599 / −3,029 lines) with byte-level behavior parity. My end of a two-person product team.</p>
-                <p class="p-meta"><span class="stack">React / Supabase / SQL · Jun–Jul 2026</span><span class="p-mark"><svg aria-hidden="true"><use href="#m-reason"/></svg>Reasons, not scores</span></p>
-              </div>
-              <div class="p-side">
-                <ul class="p-metrics"><li>644 lines SQL</li><li>92-file refactor</li><li>WCAG AA</li><li>Team of 2</li></ul>
-                <p class="p-links">
-                  <a href="https://mastermentor-marketing-diner.vercel.app" target="_blank" rel="noopener noreferrer">Marketing site <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-                  <a href="https://github.com/MangoKrish/mastermentor-marketing-diner" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-                </p>
-              </div>
-              <div class="reason" hidden></div>
-              <details class="case">
-                <summary><span class="cs-t">Case file</span><span class="cs-s">problem, approach, stack, outcome</span><svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-                <div class="case-body">
-                  <div>
-                    <dl class="case-dl">
-                      <div><dt>Problem</dt><dd>Students on a mentorship platform picked mentors from a flat directory; naive match scores are either opaque or uncomfortable to show.</dd></div>
-                      <div><dt>Approach</dt><dd>A weighted compatibility engine as a security-definer plpgsql RPC — normalized 0–100 scoring across admin-tunable dimensions with cached score rows. Privacy by design: no student can read the scores table; the API returns only ranked mentors with plain-language reasons. Then a zero-behavior-change modular refactor of the production portal, verified against the pre-refactor codebase, and a WCAG-AA design-token redesign.</dd></div>
-                      <div><dt>Stack</dt><dd>React 18 · Vite · Supabase (Postgres, RLS, plpgsql) · Deno Edge Functions · Cloudflare R2 · Vercel</dd></div>
-                      <div><dt>Outcome</dt><dd>644 lines of SQL across 4 migrations; a 92-file refactor (+6,599 / −3,029 lines) with byte-level behavior parity. My end of a two-person product team.</dd></div>
-                    </dl>
-                    <table class="case-table"><caption class="visually-hidden">MentorMatch in numbers</caption><tbody><tr><td>644 lines SQL</td><td>92-file refactor</td></tr><tr><td>WCAG AA</td><td>Team of 2</td></tr></tbody></table>
-                  </div>
-                  <figure class="flow" id="fig-mentormatch">
-                    <svg class="flow-svg" viewBox="0 0 480 360" aria-hidden="true">
-                      <rect class="bd" x="8" y="28" width="260" height="304" rx="12"/>
-                      <text class="tl" x="24" y="52">Postgres (Supabase)</text>
-                      <rect class="n" x="24" y="72" width="228" height="48" rx="4"/>
-                      <use href="#i-lock" x="36" y="81" width="12" height="12" style="color:var(--ink)"/>
-                      <text x="54" y="92">Scores table</text><text class="t2" x="54" y="109">no student access (RLS)</text>
-                      <path class="ln" d="M138 120v22" marker-end="url(#ah-ink)"/>
-                      <rect class="n" x="24" y="144" width="228" height="48" rx="4"/><text x="138" y="164" text-anchor="middle">Weighted scoring</text><text x="138" y="180" text-anchor="middle">admin-tunable, cached rows</text>
-                      <path class="ln" d="M138 192v22" marker-end="url(#ah-ink)"/>
-                      <rect class="n" x="24" y="216" width="228" height="40" rx="4"/><text x="138" y="240" text-anchor="middle">Security-definer RPC</text>
-                      <rect class="n" x="340" y="212" width="132" height="48" rx="4"/><text x="406" y="232" text-anchor="middle">Student</text><text x="406" y="248" text-anchor="middle">(React portal)</text>
-                      <path class="xa dr" pathLength="1" style="--i:0" d="M252 236h86" marker-end="url(#ah-cross)"/>
-                      <text class="tx" x="406" y="280" text-anchor="middle" style="font-size:11px">ranked mentors +</text>
-                      <text class="tx" x="406" y="294" text-anchor="middle" style="font-size:11px">plain-language</text>
-                      <text class="tx" x="406" y="308" text-anchor="middle" style="font-size:11px">reasons</text>
-                      <text class="t2 gh-t" x="406" y="330" text-anchor="middle">raw scores</text>
-                    </svg>
-                    <div class="flow-list"><p class="fl-label">Postgres (Supabase)</p><ol>
-                      <li>Scores table — no student access (row-level security)</li>
-                      <li>Weighted scoring: admin-tunable, cached rows</li>
-                      <li>Security-definer RPC</li>
-                      <li class="cr">Only ranked mentors and plain-language reasons leave the database. Raw scores never do.</li>
-                    </ol></div>
-                    <figcaption>Scoring that explains itself.</figcaption>
-                  </figure>
-                </div>
-              </details>
-            </article>
-          </li>
-
-          <!-- 04 PROPOSALPILOT -->
-          <li class="work-item" data-cat="ai" data-stack="javascript llm gemini" data-terms="byok zerodep" data-name="ProposalPilot">
-            <article class="project" id="p-proposalpilot" aria-labelledby="t-proposalpilot">
-              <span class="p-num">04</span>
-              <div class="p-main">
-                <div class="p-head"><h3 id="t-proposalpilot">ProposalPilot <span class="desc">— BYOK proposal drafter</span></h3></div>
-                <p class="p-dek">A Chrome side-panel extension that turns any job post into a tailored freelance proposal — on your own API key.</p>
-                <p class="p-meta"><span class="stack">Chrome MV3 / vanilla JS · 2026</span><span class="p-mark"><svg aria-hidden="true"><use href="#m-key"/></svg>Your key</span><span class="p-mark"><svg aria-hidden="true"><use href="#m-zero"/></svg>0 deps</span></p>
-              </div>
-              <div class="p-side">
-                <ul class="p-metrics"><li>0 dependencies</li><li>3 providers</li></ul>
-                <span class="p-status">v0.1 — unreleased</span>
-              </div>
-              <div class="reason" hidden></div>
-              <details class="case">
-                <summary><span class="cs-t">Case file</span><span class="cs-s">problem, approach, stack, outcome</span><svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-                <div class="case-body">
-                  <div>
-                    <dl class="case-dl">
-                      <div><dt>Problem</dt><dd>Freelancers rewrite near-identical proposals all day, and most AI helpers route their clients' job posts through a third-party server.</dd></div>
-                      <div><dt>Approach</dt><dd>Bring-your-own-key architecture: the browser talks directly to OpenAI, Anthropic, or Gemini — no backend at all. Reads the job post from the page (selection first, then an article-heuristic DOM walk), drafts in the freelancer's voice, and inserts the result into the reply box using the native value setter with synthetic events so React-controlled textareas accept it.</dd></div>
-                      <div><dt>Stack</dt><dd>Chrome Extensions MV3 · Side Panel API · optional host permissions · vanilla ES modules · Node test harness</dd></div>
-                      <div><dt>Outcome</dt><dd>~950 lines including tests, zero runtime dependencies, and a pure-function AI layer unit-tested in Node across all three providers.</dd></div>
-                    </dl>
-                    <table class="case-table"><caption class="visually-hidden">ProposalPilot in numbers</caption><tbody><tr><td>3 providers</td><td>0 backend</td></tr><tr><td>0 dependencies</td><td>~950 lines</td></tr></tbody></table>
-                  </div>
-                  <figure class="flow" id="fig-proposalpilot">
-                    <svg class="flow-svg" viewBox="0 0 480 360" aria-hidden="true">
-                      <rect class="bd" x="8" y="28" width="300" height="304" rx="12"/>
-                      <text class="tl" x="24" y="52">Your browser</text>
-                      <rect class="n" x="24" y="72" width="268" height="32" rx="4"/><text x="158" y="92" text-anchor="middle">Job post (this page)</text>
-                      <path class="ln" d="M158 104v22" marker-end="url(#ah-ink)"/>
-                      <rect class="n" x="24" y="128" width="268" height="32" rx="4"/><text x="158" y="148" text-anchor="middle">Side panel</text>
-                      <path class="ln" d="M158 160v22" marker-end="url(#ah-ink)"/>
-                      <rect class="n" x="24" y="184" width="268" height="32" rx="4"/><text x="158" y="204" text-anchor="middle">Draft in your voice</text>
-                      <path class="ln" d="M158 216v22" marker-end="url(#ah-ink)"/>
-                      <rect class="n" x="24" y="240" width="268" height="32" rx="4"/><text x="158" y="260" text-anchor="middle">Reply box (native value setter)</text>
-                      <use href="#i-key" x="24" y="291" width="12" height="12" style="color:var(--ink)"/><text class="t2" x="42" y="301">your API key — stored here</text>
-                      <rect class="n" x="320" y="64" width="152" height="64" rx="4"/><text x="396" y="84" text-anchor="middle" style="font-size:11px">The provider you chose</text><text x="396" y="100" text-anchor="middle" style="font-size:11px">OpenAI · Anthropic</text><text x="396" y="116" text-anchor="middle" style="font-size:11px">or Gemini</text>
-                      <path class="xa dr" pathLength="1" style="--i:0" d="M292 140h70v-10" marker-end="url(#ah-cross)"/>
-                      <text class="tx" x="318" y="160" style="font-size:11px">job post + prompt,</text>
-                      <text class="tx" x="318" y="174" style="font-size:11px">sent with your key</text>
-                      <path class="ln" d="M450 129v71H294" marker-end="url(#ah-ink)"/>
-                      <text class="t2" x="372" y="194" text-anchor="middle">draft</text>
-                      <rect class="gh" x="320" y="248" width="152" height="32" rx="4"/><text class="gh-t" x="396" y="268" text-anchor="middle">My server</text>
-                      <path class="ln2 dr" pathLength="1" style="--i:1" d="M320 280 472 248"/>
-                      <text class="t2" x="396" y="300" text-anchor="middle">there isn't one</text>
-                    </svg>
-                    <div class="flow-list"><p class="fl-label">Your browser</p><ol>
-                      <li>Job post (this page) → side panel</li>
-                      <li>Draft in your voice → reply box (native value setter)</li>
-                      <li>Your API key is stored here, in the browser</li>
-                      <li class="cr">The job post and prompt go straight to the provider you chose, with your own key.</li>
-                      <li class="gr"><s>My server</s> — there isn't one.</li>
-                    </ol></div>
-                    <figcaption>Job post in, proposal out.</figcaption>
-                  </figure>
-                </div>
-              </details>
-            </article>
-          </li>
-
-          <!-- 05 DUET -->
-          <li class="work-item" data-cat="web" data-stack="javascript node pwa sse" data-terms="local zerodep" data-name="Duet">
-            <article class="project" id="p-duetplanner" aria-labelledby="t-duetplanner">
-              <span class="p-num">05</span>
-              <div class="p-main">
-                <div class="p-head"><h3 id="t-duetplanner">Duet <span class="desc">— Offline-first planner PWA</span></h3></div>
-                <p class="p-dek">A collaborative planner for two people in timezones 10.5 hours apart — built from scratch with zero packages.</p>
-                <p class="p-meta"><span class="stack">Vanilla JS / Node stdlib · 2026</span><span class="p-mark"><svg aria-hidden="true"><use href="#m-local"/></svg>Offline-first</span><span class="p-mark"><svg aria-hidden="true"><use href="#m-zero"/></svg>0 packages</span></p>
-              </div>
-              <div class="p-side">
-                <ul class="p-metrics"><li>0 npm packages</li><li>319-line backend</li></ul>
-                <span class="p-status">Private build</span>
-              </div>
-              <div class="reason" hidden></div>
-              <details class="case">
-                <summary><span class="cs-t">Case file</span><span class="cs-s">problem, approach, stack, outcome</span><svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-                <div class="case-body">
-                  <div>
-                    <dl class="case-dl">
-                      <div><dt>Problem</dt><dd>Shared calendars assume the same timezone, need accounts in someone's cloud, and fall over offline.</dd></div>
-                      <div><dt>Approach</dt><dd>A last-write-wins merge-by-id sync algorithm implemented identically on client and server, so devices can edit offline and reconcile deterministically on reconnect. Live sync over Server-Sent Events; per-user timezone math with the Intl API, including day-boundary handling; a mutual free-time finder that intersects both schedules; and an optional AI assistant served by a local LLM.</dd></div>
-                      <div><dt>Stack</dt><dd>Vanilla JS · Node standard library only (319-line backend) · SSE · Service Workers · Intl API · Ollama</dd></div>
-                      <div><dt>Outcome</dt><dd>~6,000 hand-written lines, zero npm packages, five calendar views, atomic write-then-rename persistence.</dd></div>
-                    </dl>
-                    <table class="case-table"><caption class="visually-hidden">Duet in numbers</caption><tbody><tr><td>0 npm packages</td><td>~6,000 lines</td></tr><tr><td>5 views</td><td>319-line backend</td></tr></tbody></table>
-                  </div>
-                  <figure class="flow" id="fig-duet">
-                    <svg class="flow-svg" viewBox="0 0 480 320" aria-hidden="true">
-                      <rect class="bd" x="8" y="28" width="168" height="176" rx="12"/>
-                      <text class="tl" x="24" y="52">Device A</text>
-                      <rect class="n" x="24" y="72" width="136" height="32" rx="4"/><text x="92" y="92" text-anchor="middle">Planner PWA</text>
-                      <rect class="n" x="24" y="120" width="136" height="48" rx="4"/><text x="92" y="140" text-anchor="middle">merge-by-id</text><text x="92" y="156" text-anchor="middle">last write wins</text>
-                      <text class="t2" x="24" y="190">works offline</text>
-                      <rect class="bd" x="304" y="28" width="168" height="176" rx="12"/>
-                      <text class="tl" x="320" y="52">Device B</text>
-                      <rect class="n" x="320" y="72" width="136" height="32" rx="4"/><text x="388" y="92" text-anchor="middle">Planner PWA</text>
-                      <rect class="n" x="320" y="120" width="136" height="48" rx="4"/><text x="388" y="140" text-anchor="middle">merge-by-id</text><text x="388" y="156" text-anchor="middle">last write wins</text>
-                      <text class="t2" x="320" y="190">works offline</text>
-                      <path class="ln2" d="M184 116h112M184 110v12M296 110v12"/>
-                      <text class="tl" x="240" y="106" text-anchor="middle">10.5 h apart</text>
-                      <rect class="n" x="152" y="256" width="176" height="48" rx="4"/><text x="240" y="276" text-anchor="middle">Node server · 319 lines</text><text x="240" y="292" text-anchor="middle">same merge function</text>
-                      <path class="xa dr" pathLength="1" style="--i:0" d="M92 206v74h58" marker-start="url(#ah-cross)" marker-end="url(#ah-cross)"/>
-                      <path class="xa dr" pathLength="1" style="--i:1" d="M388 206v74h-58" marker-start="url(#ah-cross)" marker-end="url(#ah-cross)"/>
-                      <text class="tx" x="100" y="246" style="font-size:11px">sync (SSE)</text>
-                      <text class="tx" x="380" y="246" text-anchor="end" style="font-size:11px">sync (SSE)</text>
-                    </svg>
-                    <div class="flow-list"><p class="fl-label">Two devices, 10.5 hours apart</p><ol>
-                      <li>Each device runs the planner PWA with a last-write-wins, merge-by-id sync</li>
-                      <li>Each device keeps working offline</li>
-                      <li class="cr">Changes sync over Server-Sent Events to a 319-line Node server running the same merge.</li>
-                    </ol></div>
-                    <figcaption>Two timezones, one state.</figcaption>
-                  </figure>
-                </div>
-              </details>
-            </article>
-          </li>
-
-          <!-- 06 DIMENSION DASH -->
-          <li class="work-item" data-cat="games" data-stack="javascript webaudio" data-terms="zerodep" data-name="Dimension Dash">
-            <article class="project" id="p-dimensiondash" aria-labelledby="t-dimensiondash">
-              <span class="p-num">06</span>
-              <div class="p-main">
-                <div class="p-head"><h3 id="t-dimensiondash">Dimension Dash <span class="desc">— Physics as a game</span></h3></div>
-                <p class="p-dek">A spaced-repetition study game that teaches all 94 dimensional formulae from Class 11 physics.</p>
-                <p class="p-meta"><span class="stack">Vanilla JS / Web Audio · 2026</span><span class="p-mark"><svg aria-hidden="true"><use href="#m-zero"/></svg>0 deps</span></p>
-              </div>
-              <div class="p-side">
-                <ul class="p-metrics"><li>94 formulae</li><li>6 game modes</li></ul>
-                <span class="p-status">Private build</span>
-              </div>
-              <div class="reason" hidden></div>
-              <details class="case">
-                <summary><span class="cs-t">Case file</span><span class="cs-s">problem, approach, stack, outcome</span><svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-                <div class="case-body">
-                  <div>
-                    <dl class="case-dl">
-                      <div><dt>Problem</dt><dd>Dimensional formulae are a classic exam trap — 94 near-identical expressions that students usually brute-force by rote.</dd></div>
-                      <div><dt>Approach</dt><dd>A custom SM-2/Leitner spaced-repetition scheduler drives six exam-aligned game modes — including a Build Lab where formulae are assembled from exponent bricks. Confusion sets are computed at runtime by grouping quantities with identical dimensions, and anchor formulae are force-surfaced first so the rest can be derived, not memorized.</dd></div>
-                      <div><dt>Stack</dt><dd>Vanilla JS/HTML/CSS · Web Audio synthesis · versioned localStorage · zero dependencies</dd></div>
-                      <div><dt>Outcome</dt><dd>~3,000 dependency-free lines with a 94-cell mastery heatmap, JSON export/import, pre-paint theming, and reduced-motion support.</dd></div>
-                    </dl>
-                    <table class="case-table"><caption class="visually-hidden">Dimension Dash in numbers</caption><tbody><tr><td>94 formulae</td><td>6 game modes</td></tr><tr><td>0 dependencies</td><td>~3,000 lines</td></tr></tbody></table>
-                  </div>
-                  <figure class="flow list-only">
-                    <div class="flow-list"><p class="fl-label">Your browser</p><ol>
-                      <li>94 formulae → SM-2 / Leitner scheduler → 6 game modes</li>
-                      <li>Progress kept in versioned localStorage, with a 94-cell mastery heatmap</li>
-                      <li class="kp">JSON export hands you a file you keep.</li>
-                    </ol></div>
-                    <figcaption>94 formulae, 6 modes, 1 scheduler.</figcaption>
-                  </figure>
-                </div>
-              </details>
-            </article>
-          </li>
-
-          <!-- 07 TEJIMOLA -->
-          <li class="work-item" data-cat="games" data-stack="csharp unity" data-terms="" data-name="Tejimola">
-            <article class="project" id="p-tejimola" aria-labelledby="t-tejimola">
-              <span class="p-num">07</span>
-              <div class="p-main">
-                <div class="p-head"><h3 id="t-tejimola">Tejimola <span class="desc">— The blossom from clay</span></h3></div>
-                <p class="p-dek">A 90-minute narrative adventure bringing an Assamese folktale to life.</p>
-                <p class="p-meta"><span class="stack">Unity / C# · Feb 2026</span></p>
-              </div>
-              <div class="p-side">
-                <ul class="p-metrics"><li>90 minutes</li><li>4 acts</li></ul>
-                <p class="p-links"><a href="https://github.com/MangoKrish/tejimola-blossom" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a></p>
-              </div>
-              <div class="reason" hidden></div>
-              <details class="case">
-                <summary><span class="cs-t">Case file</span><span class="cs-s">problem, approach, stack, outcome</span><svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-                <div class="case-body">
-                  <div>
-                    <dl class="case-dl">
-                      <div><dt>Problem</dt><dd>Regional folktales rarely make it into games; I wanted to celebrate Assamese heritage with mechanics that serve the story.</dd></div>
-                      <div><dt>Approach</dt><dd>Four acts with four distinct mechanics — exploration, stealth, rhythm, and a boss battle — across a 2.5D world. Event-driven systems throughout: adaptive audio, JSON-driven branching dialogue, and a dspTime-based rhythm engine.</dd></div>
-                      <div><dt>Stack</dt><dd>Unity · C# · event-driven architecture · AI-assisted development workflow</dd></div>
-                      <div><dt>Outcome</dt><dd>A complete, playable 90-minute experience across four acts.</dd></div>
-                    </dl>
-                    <table class="case-table"><caption class="visually-hidden">Tejimola in numbers</caption><tbody><tr><td>90 minutes</td><td>4 acts</td></tr><tr><td>2.5D world</td><td>Rhythm engine</td></tr></tbody></table>
-                  </div>
-                  <figure class="flow" id="fig-tejimola">
-                    <svg class="flow-svg" viewBox="0 0 480 160" aria-hidden="true">
-                      <rect class="n" x="4" y="24" width="112" height="56" rx="4"/><text x="60" y="56" text-anchor="middle">Exploration</text>
-                      <rect class="n" x="124" y="24" width="112" height="56" rx="4"/><text x="180" y="56" text-anchor="middle">Stealth</text>
-                      <rect class="n" x="244" y="24" width="112" height="56" rx="4"/><text x="300" y="56" text-anchor="middle">Rhythm</text>
-                      <rect class="n" x="364" y="24" width="112" height="56" rx="4"/><text x="420" y="56" text-anchor="middle">Boss battle</text>
-                      <text class="t2" x="60" y="16" text-anchor="middle">Act 1</text><text class="t2" x="180" y="16" text-anchor="middle">Act 2</text><text class="t2" x="300" y="16" text-anchor="middle">Act 3</text><text class="t2" x="420" y="16" text-anchor="middle">Act 4</text>
-                      <path class="ln2" d="M4 108h472M4 102v12M476 102v12"/>
-                      <text class="tl" x="240" y="134" text-anchor="middle">90 minutes · act lengths not to scale</text>
-                    </svg>
-                    <div class="flow-list"><p class="fl-label">Four acts, about 90 minutes</p><ol>
-                      <li>Exploration</li><li>Stealth</li><li>Rhythm</li><li>Boss battle</li>
-                    </ol></div>
-                    <figcaption>Four acts, one folktale.</figcaption>
-                  </figure>
-                </div>
-              </details>
-            </article>
-          </li>
-
-          <!-- 08 NEONDRIFT -->
-          <li class="work-item" data-cat="games" data-stack="javascript pwa" data-terms="zerodep" data-name="NeonDrift">
-            <article class="project" id="p-neondrift" aria-labelledby="t-neondrift">
-              <span class="p-num">08</span>
-              <div class="p-main">
-                <div class="p-head"><h3 id="t-neondrift">NeonDrift <span class="desc">— Arcade runner</span></h3></div>
-                <p class="p-dek">A high-octane browser arcade runner in pure Canvas — built at DeltaHacks.</p>
-                <p class="p-meta"><span class="stack">HTML5 Canvas / vanilla JS · Jan 2026 · DeltaHacks</span><span class="p-mark"><svg aria-hidden="true"><use href="#m-zero"/></svg>0 deps</span></p>
-              </div>
-              <div class="p-side">
-                <ul class="p-metrics"><li>60 FPS target</li><li>0 dependencies</li></ul>
-                <p class="p-links">
-                  <a href="https://mangokrish.github.io/NeonDrift/" target="_blank" rel="noopener noreferrer">Play <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-                  <a href="https://github.com/MangoKrish/NeonDrift" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-                </p>
-              </div>
-              <div class="reason" hidden></div>
-              <details class="case">
-                <summary><span class="cs-t">Case file</span><span class="cs-s">problem, approach, stack, outcome</span><svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-                <div class="case-body">
-                  <div>
-                    <dl class="case-dl">
-                      <div><dt>Problem</dt><dd>Make a browser game feel arcade-tight using nothing but the platform.</dd></div>
-                      <div><dt>Approach</dt><dd>Hand-rolled physics loop and renderer on HTML5 Canvas with dynamic difficulty scaling, combo-chain scoring, and powerups — shield, magnet, slow-motion. Keyboard, touch, and drag controls for desktop and mobile.</dd></div>
-                      <div><dt>Stack</dt><dd>HTML5 Canvas · vanilla JavaScript · PWA architecture</dd></div>
-                      <div><dt>Outcome</dt><dd>A consistent 60 FPS render target, cross-platform controls, and offline play.</dd></div>
-                    </dl>
-                    <table class="case-table"><caption class="visually-hidden">NeonDrift in numbers</caption><tbody><tr><td>60 FPS</td><td>0 dependencies</td></tr><tr><td>PWA</td><td>Cross-platform</td></tr></tbody></table>
-                  </div>
-                  <figure class="flow list-only">
-                    <div class="flow-list"><p class="fl-label">Your browser</p><ol>
-                      <li>Keyboard, touch and drag input</li>
-                      <li>Hand-rolled physics loop, with power-ups: shield, magnet, slow-motion</li>
-                      <li>Canvas renderer with a 60 FPS target</li>
-                      <li>Offline play (PWA)</li>
-                    </ol></div>
-                    <figcaption>Sixty frames, zero dependencies.</figcaption>
-                  </figure>
-                </div>
-              </details>
-            </article>
-          </li>
-
-          <!-- 09 PETAL -->
-          <li class="work-item" data-cat="mobile" data-stack="kotlin compose" data-terms="local" data-name="Petal">
-            <article class="project" id="p-petal" aria-labelledby="t-petal">
-              <span class="p-num">09</span>
-              <div class="p-main">
-                <div class="p-head"><h3 id="t-petal">Petal <span class="desc">— Cycle tracker for Android</span></h3></div>
-                <p class="p-dek">An Android-native period and cycle tracker built with modern app architecture.</p>
-                <p class="p-meta"><span class="stack">Kotlin / Jetpack Compose · 2026</span><span class="p-mark"><svg aria-hidden="true"><use href="#m-local"/></svg>On-device</span></p>
-              </div>
-              <div class="p-side">
-                <ul class="p-metrics"><li>144 Kotlin files</li><li>Room + Health Connect</li></ul>
-                <p class="p-links"><a href="https://github.com/MangoKrish/petal-android" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a></p>
-              </div>
-              <div class="reason" hidden></div>
-              <details class="case">
-                <summary><span class="cs-t">Case file</span><span class="cs-s">problem, approach, stack, outcome</span><svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-                <div class="case-body">
-                  <div>
-                    <dl class="case-dl">
-                      <div><dt>Problem</dt><dd>Cycle tracking is deeply personal data — it deserves a native, local-first home rather than an ad-funded app.</dd></div>
-                      <div><dt>Approach</dt><dd>Kotlin and Jetpack Compose UI over a repository architecture: Room database with DAOs for cycles and daily fertility logs, Health Connect integration, pattern-flag insights, and an education library — 144 Kotlin files in a clean data/domain/presentation split.</dd></div>
-                      <div><dt>Stack</dt><dd>Kotlin · Jetpack Compose · Room · Health Connect · Retrofit</dd></div>
-                      <div><dt>Outcome</dt><dd>A working native app with offline-first storage and Health Connect sync.</dd></div>
-                    </dl>
-                    <table class="case-table"><caption class="visually-hidden">Petal in numbers</caption><tbody><tr><td>144 Kotlin files</td><td>Room + DAOs</td></tr><tr><td>Health Connect</td><td></td></tr></tbody></table>
-                  </div>
-                  <figure class="flow list-only">
-                    <div class="flow-list"><p class="fl-label">Layers</p><ol>
-                      <li>Presentation — Jetpack Compose</li>
-                      <li>Domain</li>
-                      <li>Data — repository: Room (cycles and daily logs, via DAOs) and Health Connect</li>
-                    </ol></div>
-                    <figcaption>Native, private, on-device.</figcaption>
-                  </figure>
-                </div>
-              </details>
-            </article>
-          </li>
-
-          <!-- 10 MUSIC PLAYER -->
-          <li class="work-item" data-cat="mobile" data-stack="typescript react-native react" data-terms="" data-name="Music Player">
-            <article class="project" id="p-musicplayer" aria-labelledby="t-musicplayer">
-              <span class="p-num">10</span>
-              <div class="p-main">
-                <div class="p-head"><h3 id="t-musicplayer">Music Player <span class="desc">— Streaming audio app</span></h3></div>
-                <p class="p-dek">A full-featured streaming music player with background audio and a persistent queue.</p>
-                <p class="p-meta"><span class="stack">React Native / TypeScript · 2026</span></p>
-              </div>
-              <div class="p-side">
-                <ul class="p-metrics"><li>Background audio</li><li>MMKV-persisted queue</li></ul>
-                <p class="p-links"><a href="https://github.com/MangoKrish/music-player-rn" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a></p>
-              </div>
-              <div class="reason" hidden></div>
-              <details class="case">
-                <summary><span class="cs-t">Case file</span><span class="cs-s">problem, approach, stack, outcome</span><svg aria-hidden="true"><use href="#i-plus"/></svg></summary>
-                <div class="case-body">
-                  <div>
-                    <dl class="case-dl">
-                      <div><dt>Problem</dt><dd>Build a real music app — not a demo: search, background playback, and state that doesn’t reset every launch.</dd></div>
-                      <div><dt>Approach</dt><dd>Expo dev-client app with debounced infinite-scroll search, full playback via expo-av with background support, a mini-player synced with the full player across screens, shuffle and repeat modes, and queue persistence in MMKV for synchronous O(1) reads.</dd></div>
-                      <div><dt>Stack</dt><dd>React Native (Expo) · TypeScript · Zustand · expo-av · MMKV · React Navigation</dd></div>
-                      <div><dt>Outcome</dt><dd>A standalone Android build with background audio and a queue that survives app restarts.</dd></div>
-                    </dl>
-                    <table class="case-table"><caption class="visually-hidden">Music Player in numbers</caption><tbody><tr><td>Background audio</td><td>MMKV persistence</td></tr><tr><td>TypeScript</td><td></td></tr></tbody></table>
-                  </div>
-                  <figure class="flow list-only">
-                    <div class="flow-list"><p class="fl-label">What happens on launch</p><ol>
-                      <li>App launch → MMKV synchronous read → queue restored</li>
-                      <li>Mini-player and full player stay in sync across screens</li>
-                      <li>Background audio via expo-av</li>
-                    </ol></div>
-                    <figcaption>Queue survives the restart.</figcaption>
-                  </figure>
-                </div>
-              </details>
-            </article>
-          </li>
-
-        </ol>
-      </div>
-    </section>
-
-    <!-- ============ YOUR MOVE: LIVE CHESS ============ -->
-    <section class="section" id="offhours" aria-labelledby="chess">
-      <div class="wrap">
-        <div class="sec-head">
-          <p class="label">Correspondence chess · you play White</p>
-          <h2 id="chess" tabindex="-1">Your move.</h2>
-          <p class="lede">I'm a FIDE-rated player. This board is live: make a move as White and it lands on my desk. I reply to every game by hand.</p>
-        </div>
-        <div class="grid chess-grid">
-          <div class="board-col">
-            <div class="board-wrap">
-              <div class="ranks" aria-hidden="true"><span>8</span><span>7</span><span>6</span><span>5</span><span>4</span><span>3</span><span>2</span><span>1</span></div>
-              <div class="board-frame">
-                <div class="board-sq">
-                  <div id="chessboard" class="cb" role="grid" aria-label="Live correspondence chessboard, you play White" aria-describedby="chessStatus"></div>
-                  <div class="cb-pieces" id="cbPieces" aria-hidden="true"></div>
-                </div>
-                <noscript><p class="small" style="padding:12px">The live board needs JavaScript. The rest of this page doesn't.</p></noscript>
-              </div>
-              <div class="files" aria-hidden="true"><span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span></div>
-            </div>
-          </div>
-          <div class="panel-col">
-            <div class="panel">
-              <p class="chess-status" id="chessStatus" aria-live="polite">Setting up the board…</p>
-              <div class="moves-wrap" id="movesWrap" role="region" aria-label="Move list" tabindex="0" hidden>
-                <table class="moves"><caption class="visually-hidden">Moves so far</caption><thead><tr><th scope="col">No.</th><th scope="col">You</th><th scope="col">Me</th></tr></thead><tbody id="chessMoves"></tbody></table>
-              </div>
-              <h3 class="rules-h">House rules, in plain terms</h3>
-              <ul class="rules"><li>No castling.</li><li>No en passant.</li><li>Capture the king to win.</li><li>Pawns that reach the end become queens.</li></ul>
-              <div class="chess-btns">
-                <button class="btn btn-secondary" id="chessReset" type="button" hidden>New game</button>
-                <a href="https://ratings.fide.com/profile/547078332" target="_blank" rel="noopener noreferrer">FIDE profile <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-                <a href="https://www.chess.ca/en/ratings/p/?id=202654" target="_blank" rel="noopener noreferrer">CFC profile <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-              </div>
-              <details class="how">
-                <summary>How this works</summary>
-                <p>Your moves go to aks-pulse.vercel.app, a small server I wrote, tagged only with a random id kept in your browser (aks-vid). While this tab is open and you're waiting, it checks for my reply every 45 seconds, pauses while the tab is hidden, and checks once more when you come back.</p>
-              </details>
-              <p class="small chess-fig" id="chessFig"></p>
-            </div>
-          </div>
-        </div>
-        <div class="otherwise">
-          <p class="label">Otherwise</p>
-          <dl>
-            <div><dt>Badminton</dt><dd>Fast rallies, faster footwork — the other kind of reaction time.</dd></div>
-            <div><dt>Music</dt><dd>Always playing something — usually while debugging.</dd></div>
+    <div id="work">
+    <!-- ============ 1 · PEPPA ============ -->
+    <section class="scene" id="peppa" data-scene="1" aria-labelledby="h-peppa">
+      <div class="pin">
+        <div class="copy">
+          <p class="kicker rv" data-k="0">01 · Peppa, a local voice assistant</p>
+          <h2 class="big" id="h-peppa"><span class="line rv" data-k="1">Jarvis, with nothing</span> <span class="line rv" data-k="2"><em>leaving the room.</em></span></h2>
+          <dl class="nums rv" data-k="3">
+            <div><dt>sub-2s</dt><dd>voice to voice</dd></div>
+            <div><dt>5</dt><dd>on-device models</dd></div>
+            <div><dt>242</dt><dd>tests</dd></div>
           </dl>
+          <p class="acts rv" data-k="4"><button class="open" type="button" data-case="peppa">Open the case file <svg class="ico" aria-hidden="true"><use href="#i-right"/></svg></button></p>
         </div>
       </div>
     </section>
 
-    <!-- ============ RECORD ============ -->
-    <section class="section" id="experience" aria-labelledby="record-h">
-      <div class="wrap">
-        <div class="sec-head">
-          <p class="label">Record</p>
-          <h2 id="record-h">The record so far.</h2>
-        </div>
-        <ol class="record">
-          <li>
-            <span class="when">Jun–Jul 2026</span>
-            <div class="what"><h3>MentorMatch — Product Engineering (two-person team)</h3><p>Designed and shipped the mentor-matching subsystem end-to-end on a live mentorship platform, then led a verified zero-behavior-change refactor and a WCAG-AA redesign of the portal and marketing site.</p></div>
-            <span class="tag">Product</span>
-          </li>
-          <li>
-            <span class="when">Sep 2025 – May 2029</span>
-            <div class="what"><h3>McMaster University — BASc Computer Science (Co-op)</h3><p>Hamilton, Ontario. Coursework: Introduction to Python, Computational Thinking, Software Development, Linear Algebra, Discrete Math, C programming &amp; Linux, Calculus.</p></div>
-            <span class="tag">Education</span>
-          </li>
-          <li>
-            <span class="when">2024</span>
-            <div class="what"><h3>House Captain — Student Council, JNS</h3><p>Led the house to the Sports, Cultural, and overall House trophies in a single year — the first time in a decade.</p></div>
-            <span class="tag">Leadership</span>
-          </li>
-          <li>
-            <span class="when">May 2022</span>
-            <div class="what"><h3>SysIdea Lab, IIT Gandhinagar — Robotics Research Intern</h3><p>Prototyped robotic components with 3D CAD, laser cutting, and 3D printing; assisted experimentation, debugging, and performance analysis at the hardware–software boundary. Hands-on with embedded systems and real-time software–hardware integration.</p></div>
-            <span class="tag">Research</span>
-          </li>
-        </ol>
-      </div>
-    </section>
-
-    <!-- ============ TOOLS ============ -->
-    <section class="section" id="capabilities" aria-labelledby="tools-h">
-      <div class="wrap">
-        <div class="sec-head">
-          <p class="label">Tools</p>
-          <h2 id="tools-h">Tools, with evidence.</h2>
-          <p class="lede">Each tool lists the projects on this page that use it. Select one to filter the work.</p>
-        </div>
-        <div class="tools">
-          <div>
-            <h3>Languages</h3>
-            <ul>
-              <li><button type="button" class="skill" data-skill="python"><span class="s-name">Python</span><span class="s-use">Peppa, Argus</span></button></li>
-              <li><button type="button" class="skill" data-skill="javascript"><span class="s-name">JavaScript</span><span class="s-use">ProposalPilot, Duet, Dimension Dash, NeonDrift</span></button></li>
-              <li><button type="button" class="skill" data-skill="typescript"><span class="s-name">TypeScript</span><span class="s-use">MentorMatch, Music Player</span></button></li>
-              <li><button type="button" class="skill" data-skill="csharp"><span class="s-name">C#</span><span class="s-use">Tejimola</span></button></li>
-              <li><button type="button" class="skill" data-skill="kotlin"><span class="s-name">Kotlin</span><span class="s-use">Petal</span></button></li>
-              <li><button type="button" class="skill" data-skill="sql"><span class="s-name">SQL</span><span class="s-use">MentorMatch</span></button></li>
-            </ul>
-          </div>
-          <div>
-            <h3>Frameworks &amp; runtimes</h3>
-            <ul>
-              <li><button type="button" class="skill" data-skill="react"><span class="s-name">React / Next.js</span><span class="s-use">Argus, MentorMatch, Music Player</span></button></li>
-              <li><button type="button" class="skill" data-skill="fastapi"><span class="s-name">FastAPI</span><span class="s-use">Argus</span></button></li>
-              <li><button type="button" class="skill" data-skill="node"><span class="s-name">Node.js</span><span class="s-use">Duet</span></button></li>
-              <li><button type="button" class="skill" data-skill="unity"><span class="s-name">Unity</span><span class="s-use">Tejimola</span></button></li>
-              <li><button type="button" class="skill" data-skill="compose"><span class="s-name">Jetpack Compose</span><span class="s-use">Petal</span></button></li>
-              <li><button type="button" class="skill" data-skill="react-native"><span class="s-name">React Native</span><span class="s-use">Music Player</span></button></li>
-              <li><button type="button" class="skill" data-skill="tailwind"><span class="s-name">Tailwind CSS</span><span class="s-use">Argus</span></button></li>
-              <li><button type="button" class="skill" data-skill="threejs"><span class="s-name">Three.js</span><span class="s-use">Argus</span></button></li>
-            </ul>
-          </div>
-          <div>
-            <h3>AI &amp; systems</h3>
-            <ul>
-              <li><button type="button" class="skill" data-skill="llm"><span class="s-name">LLM orchestration</span><span class="s-use">Peppa, Argus, ProposalPilot</span></button></li>
-              <li><button type="button" class="skill" data-skill="embeddings"><span class="s-name">Semantic embeddings</span><span class="s-use">Peppa, Argus</span></button></li>
-              <li><button type="button" class="skill" data-skill="gemini"><span class="s-name">Gemini API</span><span class="s-use">Argus, ProposalPilot</span></button></li>
-              <li><button type="button" class="skill" data-skill="pwa"><span class="s-name">PWA / service workers</span><span class="s-use">Duet, NeonDrift</span></button></li>
-              <li><button type="button" class="skill" data-skill="sse"><span class="s-name">Realtime (SSE)</span><span class="s-use">Duet</span></button></li>
-            </ul>
-          </div>
-        </div>
-        <div class="also-resume">
-          <h3>Also on my résumé</h3>
-          <p>Java, C, PHP, HTML/CSS, Linux &amp; self-hosting, Arduino, Google Cloud, 3D CAD, 3D printing, laser cutting.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ CONTACT ============ -->
-    <section class="section" id="contact" aria-labelledby="contact-h">
-      <div class="wrap">
-        <div class="sec-head">
-          <p class="label">Contact</p>
-          <h2 id="contact-h" tabindex="-1">Let's talk.</h2>
-          <p class="lede">I'm actively looking for co-op and internship opportunities in software engineering, robotics, and NLP. If your team ships, I'd love to hear from you.</p>
-        </div>
-        <a class="big-email" href="mailto:sirigana@mcmaster.ca">sirigana@mcmaster.ca</a>
-        <p class="contact-copy"><button class="tbtn copy-email" id="copyEmail" type="button" data-email="sirigana@mcmaster.ca"><svg class="ico" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span></button></p>
-        <p class="contact-links">
-          <a href="https://www.linkedin.com/in/akshay-krishna-sirigana-1b718a380/" target="_blank" rel="noopener noreferrer">LinkedIn <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-          <a href="https://github.com/MangoKrish" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-          <a href="Resume_Krish.pdf" target="_blank" rel="noopener noreferrer">Resume (PDF, 124 KB) <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
-        </p>
-        <p class="signoff">— Akshay</p>
-      </div>
-    </section>
-
-    <!-- ============ WHAT THIS PAGE KEEPS AND SENDS ============ -->
-    <section class="section privacy" id="privacy" aria-labelledby="privacy-h">
-      <div class="wrap">
-        <div class="sec-head">
-          <p class="label">This page</p>
-          <h2 id="privacy-h">What this page keeps and sends.</h2>
-          <p class="lede">A short, plain account — the same rules I build by.</p>
-        </div>
-        <div class="grid priv-grid">
-          <dl class="ledger col-read">
-            <div>
-              <dt>Kept in your browser</dt>
-              <dd><ul>
-                <li><code>aks-theme</code>: your light or dark choice — only if you picked one. <span class="live-val" id="ledTheme"></span></li>
-                <li><code>aks-vid</code>: <span id="ledVid">a random id, created on your first visit so your chess game is still here when you return.</span></li>
-                <li>Nothing else: no cookies from this page.</li>
-              </ul></dd>
-            </div>
-            <div>
-              <dt>Sent from your browser</dt>
-              <dd><ul>
-                <li><code>mangokrish.github.io</code> serves this page and its fonts.</li>
-                <li><code>aks-pulse.vercel.app</code> is a small server I wrote, hosted on Vercel. It receives your chess moves, when you make one; and pseudonymous stats tagged with your aks-vid: page views, sections seen, case files you open, lens and filter choices, the host and start of the path of links you follow, and résumé and email-copy clicks.</li>
-                <li>Like any web server, both see your IP address and browser details. No third-party trackers.</li>
-              </ul></dd>
-            </div>
-            <div>
-              <dt>Right now</dt>
-              <dd id="ledNow">
-                <p id="ledDnt" hidden>Your browser sent a do-not-track signal, so no stats have been sent. Chess moves are still sent when you make one — that's the point of the board.</p>
-                <div id="ledQueue">
-                  <p>Stats queued this visit: <span class="live-val" id="ledCount">0</span></p>
-                  <details id="ledDetails">
-                    <summary>Show the list</summary>
-                    <table class="sent-table"><caption class="visually-hidden">Stats queued this visit</caption><thead><tr><th scope="col">Type</th><th scope="col">Label</th><th scope="col">Time</th></tr></thead><tbody id="ledRows"></tbody></table>
-                  </details>
-                </div>
-              </dd>
-            </div>
+    <!-- ============ 2 · ARGUS ============ -->
+    <section class="scene" id="argus" data-scene="2" aria-labelledby="h-argus">
+      <div class="pin">
+        <div class="copy">
+          <p class="kicker rv" data-k="0">02 · Argus, built at Mac-a-thon 2026</p>
+          <h2 class="big" id="h-argus"><span class="line rv" data-k="1">Know what governments need</span> <span class="line rv" data-k="2"><em>before the RFP drops.</em></span></h2>
+          <dl class="nums rv" data-k="3">
+            <div><dt>&gt;85%</dt><dd>match accuracy</dd></div>
+            <div><dt>&lt;3s</dt><dd>responses</dd></div>
+            <div><dt>4</dt><dd>people, 3 universities</dd></div>
           </dl>
-          <div class="col-ev">
-            <figure class="flow" id="fig-privacy">
-              <svg class="flow-svg" viewBox="0 0 480 400" aria-hidden="true">
-                <rect class="n" x="24" y="8" width="188" height="32" rx="4"/><text x="118" y="28" text-anchor="middle">mangokrish.github.io</text>
-                <path class="ln" d="M118 40v70" marker-end="url(#ah-ink)"/>
-                <text class="t2" x="126" y="62">this page, once</text>
-                <rect class="bd" x="8" y="72" width="300" height="320" rx="12"/>
-                <text class="tl" x="24" y="96">Your browser</text>
-                <rect class="n" x="24" y="112" width="268" height="48" rx="4"/><text x="158" y="132" text-anchor="middle">index.html · style.css</text><text x="158" y="148" text-anchor="middle">script.js · fonts</text>
-                <text class="t2" x="24" y="184">0 frameworks · 0 dependencies</text>
-                <rect class="n" x="24" y="208" width="120" height="32" rx="4"/><use href="#i-key" x="34" y="218" width="12" height="12" style="color:var(--keep)"/><text x="52" y="228">aks-theme</text>
-                <rect class="n" x="152" y="208" width="120" height="32" rx="4"/><use href="#i-key" x="162" y="218" width="12" height="12" style="color:var(--keep)"/><text x="180" y="228">aks-vid</text>
-                <text class="t2" x="24" y="262">kept here</text>
-                <rect class="n" x="320" y="200" width="152" height="48" rx="4"/><text x="396" y="220" text-anchor="middle">aks-pulse</text><text x="396" y="236" text-anchor="middle">.vercel.app</text>
-                <path class="xa dr" pathLength="1" style="--i:0" d="M292 128h164v70" marker-end="url(#ah-cross)"/>
-                <text class="tx" x="316" y="150" style="font-size:11px">chess moves —</text>
-                <text class="tx" x="316" y="164" style="font-size:11px">only when you move</text>
-                <path class="xa dashx stats-arrow fade" d="M272 224h46" marker-end="url(#ah-cross)"/>
-                <text class="tx stats-label fade" x="396" y="270" text-anchor="middle" style="font-size:11px" id="statsL1">stats, tagged</text>
-                <text class="tx stats-label fade" x="396" y="284" text-anchor="middle" style="font-size:11px" id="statsL2">with aks-vid</text>
-                <path class="ln2 stats-strike" d="M288 216l14 16" hidden/>
-              </svg>
-              <div class="flow-list"><p class="fl-label">Your browser</p><ol>
-                <li>This page, once, from mangokrish.github.io: index.html, style.css, script.js and fonts (0 frameworks, 0 dependencies)</li>
-                <li class="kp">Kept here: aks-theme and aks-vid</li>
-                <li class="cr">Chess moves go to aks-pulse.vercel.app, only when you move.</li>
-                <li class="cr" id="statsListItem">Stats go to aks-pulse.vercel.app, tagged with aks-vid.</li>
-              </ol></div>
-              <figcaption>This page, drawn.</figcaption>
-            </figure>
-          </div>
+          <p class="acts rv" data-k="4">
+            <button class="open" type="button" data-case="argus">Open the case file <svg class="ico" aria-hidden="true"><use href="#i-right"/></svg></button>
+            <a class="lnk" href="https://argus-macathon.vercel.app/" target="_blank" rel="noopener noreferrer">Live demo <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+          </p>
         </div>
-        <p class="small priv-close">To forget this browser, clear this site's data in your browser settings. Anything already sent stays on the server under the old id.</p>
+      </div>
+    </section>
+
+    <!-- ============ 3 · MENTORMATCH ============ -->
+    <section class="scene" id="mentormatch" data-scene="3" aria-labelledby="h-mm">
+      <div class="pin">
+        <div class="copy">
+          <p class="kicker rv" data-k="0">03 · MentorMatch, product engineering · Jun–Jul 2026</p>
+          <h2 class="big" id="h-mm"><span class="line rv" data-k="1">Mentor matches that give</span> <span class="line rv" data-k="2"><em>reasons, not scores.</em></span></h2>
+          <dl class="nums rv" data-k="3">
+            <div><dt>644</dt><dd>lines of SQL</dd></div>
+            <div><dt>92</dt><dd>files refactored</dd></div>
+            <div><dt>Live</dt><dd>mentorship platform</dd></div>
+          </dl>
+          <p class="acts rv" data-k="4">
+            <button class="open" type="button" data-case="mentormatch">Open the case file <svg class="ico" aria-hidden="true"><use href="#i-right"/></svg></button>
+            <a class="lnk" href="https://mastermentor-marketing-diner.vercel.app" target="_blank" rel="noopener noreferrer">Marketing site <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 4 · SEVEN MORE ============ -->
+    <section class="scene" id="more" data-scene="4" aria-labelledby="h-more">
+      <div class="pin">
+        <div class="copy">
+          <h2 class="big" id="h-more"><span class="line rv" data-k="0">And seven <em>more.</em></span></h2>
+          <ul class="more">
+            <li class="rv" data-k="1"><button type="button" data-case="proposalpilot"><b>ProposalPilot</b><span>Freelance proposals, on your own API key.</span></button></li>
+            <li class="rv" data-k="2"><button type="button" data-case="duetplanner"><b>Duet</b><span>A planner for two people 10.5 hours apart.</span></button></li>
+            <li class="rv" data-k="3"><button type="button" data-case="dimensiondash"><b>Dimension Dash</b><span>94 physics formulae, turned into a game.</span></button></li>
+            <li class="rv" data-k="4"><button type="button" data-case="tejimola"><b>Tejimola</b><span>An Assamese folktale, as a 90-minute game.</span></button></li>
+            <li class="rv" data-k="5"><button type="button" data-case="neondrift"><b>NeonDrift</b><span>A 60 fps arcade runner, zero dependencies.</span></button></li>
+            <li class="rv" data-k="6"><button type="button" data-case="petal"><b>Petal</b><span>A private cycle tracker for Android.</span></button></li>
+            <li class="rv" data-k="7"><button type="button" data-case="musicplayer"><b>Music Player</b><span>A queue that survives the restart.</span></button></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    </div>
+
+    <!-- ============ 5 · YOUR MOVE ============ -->
+    <section class="scene scene-chess" id="offhours" data-scene="5" aria-labelledby="chess">
+      <div class="pin">
+        <div class="copy chess-copy">
+          <p class="kicker rv" data-k="0">Off the keyboard · FIDE-rated</p>
+          <h2 class="big" id="chess" tabindex="-1"><span class="line rv" data-k="1">Your <em>move.</em></span></h2>
+          <p class="sub rv" data-k="2">You play White. The move lands on my desk, and I reply to every game.</p>
+          <p class="chess-status rv" data-k="3" id="chessStatus" aria-live="polite">Setting up the board…</p>
+          <p class="acts small-acts rv" data-k="4">
+            <button class="lnk as-btn" id="chessReset" type="button" hidden>New game</button>
+            <a class="lnk" href="https://ratings.fide.com/profile/547078332" target="_blank" rel="noopener noreferrer">FIDE <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+            <a class="lnk" href="https://www.chess.ca/en/ratings/p/?id=202654" target="_blank" rel="noopener noreferrer">CFC <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+          </p>
+          <p class="rules rv" data-k="5" id="chessFig">House rules: no castling, no en passant — capture the king to win.</p>
+        </div>
+        <div class="board-wrap rv" data-k="2">
+          <div class="board-sq">
+            <div id="chessboard" class="cb" role="grid" aria-label="Live correspondence chessboard, you play White" aria-describedby="chessStatus"></div>
+            <div class="cb-pieces" id="cbPieces" aria-hidden="true"></div>
+          </div>
+          <noscript><p>The live board needs JavaScript.</p></noscript>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 6 · LET'S TALK ============ -->
+    <section class="scene" id="contact" data-scene="6" aria-labelledby="h-contact">
+      <div class="pin">
+        <div class="copy">
+          <p class="kicker rv" data-k="0">Open to co-op &amp; internships</p>
+          <h2 class="big" id="h-contact"><span class="line rv" data-k="1">If your team ships,</span> <span class="line rv" data-k="2"><em>let's talk.</em></span></h2>
+          <p class="mail rv" data-k="3"><a href="mailto:sirigana@mcmaster.ca">sirigana@mcmaster.ca</a> <button class="lnk as-btn copy-email" id="copyEmail" type="button" data-email="sirigana@mcmaster.ca">Copy</button></p>
+          <p class="acts rv" data-k="4">
+            <a class="lnk" href="Resume_Krish.pdf" target="_blank" rel="noopener noreferrer">Resume <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+            <a class="lnk" href="https://www.linkedin.com/in/akshay-krishna-sirigana-1b718a380/" target="_blank" rel="noopener noreferrer">LinkedIn <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+            <a class="lnk" href="https://github.com/MangoKrish" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+          </p>
+        </div>
       </div>
     </section>
   </main>
 
-  <!-- ============ FOOTER ============ -->
   <footer class="foot">
-    <div class="wrap">
-      <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2" y="2" width="16" height="16" rx="2" fill="none" stroke="var(--boundary)" stroke-width="1.5" stroke-dasharray="3 2.5"/><circle cx="10" cy="10" r="3.5" fill="var(--keep)"/></svg>
-      <p class="small">Set in Schibsted Grotesk, Source Serif 4 and IBM Plex Mono, served from this site.</p>
-      <p class="small">Hand-built: vanilla HTML, CSS and JS. No frameworks, no build step, no third-party trackers.</p>
-      <p class="small">© 2026 Akshay Krishna Sirigana · Hamilton, Ontario.</p>
-      <button class="tbtn" id="followSystem" type="button" hidden>Follow system theme</button>
-    </div>
+    <p>Hand-built with zero dependencies — the point field is plain canvas. First-party stats only; Do Not Track is respected.</p>
+    <p>© 2026 Akshay Krishna Sirigana · Hamilton, Ontario</p>
   </footer>
 
-  <p class="visually-hidden" id="copyStatus" role="status" aria-live="polite"></p>
+  <!-- ============ JUST THE FACTS ============ -->
+  <dialog class="drawer" id="facts" aria-labelledby="facts-h">
+    <div class="drawer-in">
+      <button class="close" type="button" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      <p class="d-kick">The 30-second version</p>
+      <h2 id="facts-h">Akshay Krishna Sirigana</h2>
+      <dl class="facts">
+        <div><dt>Now</dt><dd>BASc Computer Science (Co-op), McMaster University, 2025–2029 · Hamilton, Ontario</dd></div>
+        <div><dt>Looking for</dt><dd>Co-op and internship roles in software engineering, robotics, or NLP</dd></div>
+        <div><dt>Experience</dt><dd>Product engineering at MentorMatch, Jun–Jul 2026 (two-person team, live platform) · Robotics research intern, SysIdea Lab, IIT Gandhinagar, May 2022 · House Captain, Student Council, JNS, 2024</dd></div>
+        <div><dt>Built</dt><dd>10 projects, including Peppa (16,400+ lines, 242 tests) and Argus (Mac-a-thon 2026, over 85% match accuracy)</dd></div>
+        <div><dt>Works in</dt><dd>Python, JavaScript, TypeScript, SQL, C#, Kotlin · React / Next.js, FastAPI, Node.js, Unity · LLM orchestration, semantic embeddings</dd></div>
+      </dl>
+      <p class="d-links">
+        <a class="pill solid" href="Resume_Krish.pdf" target="_blank" rel="noopener noreferrer">Resume (PDF) <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+        <a class="lnk" href="mailto:sirigana@mcmaster.ca">sirigana@mcmaster.ca</a>
+        <a class="lnk" href="https://www.linkedin.com/in/akshay-krishna-sirigana-1b718a380/" target="_blank" rel="noopener noreferrer">LinkedIn <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+        <a class="lnk" href="https://github.com/MangoKrish" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+      </p>
+    </div>
+  </dialog>
 
+  <!-- ============ CASE FILES (open on demand) ============ -->
+  <dialog class="drawer" id="p-peppa" data-slug="peppa" aria-labelledby="c-peppa">
+    <div class="drawer-in">
+      <button class="close" type="button" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      <p class="d-kick">01 · 2026 · Python / MLX / Ollama</p>
+      <h2 id="c-peppa">Peppa</h2>
+      <p class="d-dek">A Jarvis-style voice assistant that runs entirely on a laptop — no cloud, no API keys, no audio leaving the room.</p>
+      <dl class="case">
+        <div><dt>The problem</dt><dd>Voice assistants ship your voice, questions, and files to someone else's servers. I wanted Jarvis-grade help with nothing leaving the machine.</dd></div>
+        <div><dt>What I built</dt><dd>Five on-device models (14B chat, 32B reasoning, coder, vision, embeddings) behind a router with five thinking modes — the deepest one plans, investigates with tools, then has a second model red-team the draft before it's spoken. Speech streams sentence-by-sentence while the answer is still generating, with barge-in interruption. For arithmetic it refuses to guess in-weights and instead writes and runs Python in a sandbox.</dd></div>
+        <div><dt>Outcome</dt><dd>Sub-2-second voice-to-voice latency, 46 tool skills, and a deterministic reflex layer that keeps it answering even with the LLM runtime fully offline.</dd></div>
+      </dl>
+      <p class="d-nums"><span>16,400+ lines</span><span>242 tests</span><span>46 skills</span><span>5 local models</span></p>
+      <p class="d-stack">Python 3.12 · Ollama (Qwen2.5) · MLX-Whisper · on-device TTS voice cloning · PySide6 · local RAG · sandboxed code execution</p>
+      <p class="d-links"><span class="tag">Local-only build</span><a class="lnk" href="mailto:sirigana@mcmaster.ca?subject=Peppa%20demo">Ask for a demo</a></p>
+    </div>
+  </dialog>
+
+  <dialog class="drawer" id="p-argus" data-slug="argus" aria-labelledby="c-argus">
+    <div class="drawer-in">
+      <button class="close" type="button" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      <p class="d-kick">02 · Feb 2026 · Mac-a-thon · Next.js / FastAPI / Gemini</p>
+      <h2 id="c-argus">Argus</h2>
+      <p class="d-dek">Know what governments need before they post the RFP.</p>
+      <dl class="case">
+        <div><dt>The problem</dt><dd>Startups discover government procurement opportunities after the RFP drops — too late to prepare or shape the bid.</dd></div>
+        <div><dt>What we built</dt><dd>Monitor procurement signals in real time, match them to startup capability profiles using Gemini 2.5 Flash plus semantic embeddings, and generate personalized outreach — all visualized on an interactive Three.js globe of live global signals.</dd></div>
+        <div><dt>Outcome</dt><dd>85%+ match accuracy with sub-3-second responses. Built at Mac-a-thon 2026 with a cross-university team of four (McMaster, TMU, UofT).</dd></div>
+      </dl>
+      <p class="d-nums"><span>&gt;85% accuracy</span><span>&lt;3 s response</span><span>Live signals</span><span>Team of 4</span></p>
+      <p class="d-stack">Next.js · React · Three.js · Tailwind · Framer Motion · FastAPI · Python · Gemini 2.5 Flash · semantic embeddings</p>
+      <p class="d-links">
+        <a class="lnk" href="https://argus-macathon.vercel.app/" target="_blank" rel="noopener noreferrer">Live demo <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+        <a class="lnk" href="https://github.com/dunura13/Argus" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+        <a class="lnk" href="https://devpost.com/software/argus-uipa2c" target="_blank" rel="noopener noreferrer">Devpost <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+      </p>
+    </div>
+  </dialog>
+
+  <dialog class="drawer" id="p-mentormatch" data-slug="mentormatch" aria-labelledby="c-mentormatch">
+    <div class="drawer-in">
+      <button class="close" type="button" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      <p class="d-kick">03 · Jun–Jul 2026 · React / Supabase / SQL</p>
+      <h2 id="c-mentormatch">MentorMatch</h2>
+      <p class="d-dek">A mentor-recommendation engine that lives inside Postgres and gives students reasons, never raw scores.</p>
+      <dl class="case">
+        <div><dt>The problem</dt><dd>Students on a mentorship platform picked mentors from a flat directory; naive match scores are either opaque or uncomfortable to show.</dd></div>
+        <div><dt>What I built</dt><dd>A weighted compatibility engine as a security-definer plpgsql RPC — normalized 0–100 scoring across admin-tunable dimensions with cached score rows. Privacy by design: no student can read the scores table; the API returns only ranked mentors with plain-language reasons. Then a zero-behavior-change modular refactor of the production portal, verified against the pre-refactor codebase, and a WCAG-AA design-token redesign.</dd></div>
+        <div><dt>Outcome</dt><dd>644 lines of SQL across 4 migrations; a 92-file refactor (+6,599 / −3,029 lines) with byte-level behavior parity. My end of a two-person product team.</dd></div>
+      </dl>
+      <p class="d-nums"><span>644 lines SQL</span><span>92-file refactor</span><span>WCAG AA</span><span>Team of 2</span></p>
+      <p class="d-stack">React 18 · Vite · Supabase (Postgres, RLS, plpgsql) · Deno Edge Functions · Cloudflare R2 · Vercel</p>
+      <p class="d-links">
+        <a class="lnk" href="https://mastermentor-marketing-diner.vercel.app" target="_blank" rel="noopener noreferrer">Marketing site <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+        <a class="lnk" href="https://github.com/MangoKrish/mastermentor-marketing-diner" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+      </p>
+    </div>
+  </dialog>
+
+  <dialog class="drawer" id="p-proposalpilot" data-slug="proposalpilot" aria-labelledby="c-proposalpilot">
+    <div class="drawer-in">
+      <button class="close" type="button" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      <p class="d-kick">04 · 2026 · Chrome MV3 / vanilla JS</p>
+      <h2 id="c-proposalpilot">ProposalPilot</h2>
+      <p class="d-dek">A Chrome side-panel extension that turns any job post into a tailored freelance proposal — on your own API key.</p>
+      <dl class="case">
+        <div><dt>The problem</dt><dd>Freelancers rewrite near-identical proposals all day, and most AI helpers route their clients' job posts through a third-party server.</dd></div>
+        <div><dt>What I built</dt><dd>Bring-your-own-key architecture: the browser talks directly to OpenAI, Anthropic, or Gemini — no backend at all. Reads the job post from the page (selection first, then an article-heuristic DOM walk), drafts in the freelancer's voice, and inserts the result into the reply box using the native value setter with synthetic events so React-controlled textareas accept it.</dd></div>
+        <div><dt>Outcome</dt><dd>~950 lines including tests, zero runtime dependencies, and a pure-function AI layer unit-tested in Node across all three providers.</dd></div>
+      </dl>
+      <p class="d-nums"><span>3 providers</span><span>0 backend</span><span>0 dependencies</span><span>~950 lines</span></p>
+      <p class="d-stack">Chrome Extensions MV3 · Side Panel API · optional host permissions · vanilla ES modules · Node test harness</p>
+      <p class="d-links"><span class="tag">v0.1 — unreleased</span></p>
+    </div>
+  </dialog>
+
+  <dialog class="drawer" id="p-duetplanner" data-slug="duetplanner" aria-labelledby="c-duet">
+    <div class="drawer-in">
+      <button class="close" type="button" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      <p class="d-kick">05 · 2026 · Vanilla JS / Node stdlib</p>
+      <h2 id="c-duet">Duet</h2>
+      <p class="d-dek">A collaborative planner for two people in timezones 10.5 hours apart — built from scratch with zero packages.</p>
+      <dl class="case">
+        <div><dt>The problem</dt><dd>Shared calendars assume the same timezone, need accounts in someone's cloud, and fall over offline.</dd></div>
+        <div><dt>What I built</dt><dd>A last-write-wins merge-by-id sync algorithm implemented identically on client and server, so devices can edit offline and reconcile deterministically on reconnect. Live sync over Server-Sent Events; per-user timezone math with the Intl API, including day-boundary handling; a mutual free-time finder that intersects both schedules; and an optional AI assistant served by a local LLM.</dd></div>
+        <div><dt>Outcome</dt><dd>~6,000 hand-written lines, zero npm packages, five calendar views, atomic write-then-rename persistence.</dd></div>
+      </dl>
+      <p class="d-nums"><span>0 npm packages</span><span>~6,000 lines</span><span>5 views</span><span>319-line backend</span></p>
+      <p class="d-stack">Vanilla JS · Node standard library only (319-line backend) · SSE · Service Workers · Intl API · Ollama</p>
+      <p class="d-links"><span class="tag">Private build</span></p>
+    </div>
+  </dialog>
+
+  <dialog class="drawer" id="p-dimensiondash" data-slug="dimensiondash" aria-labelledby="c-dd">
+    <div class="drawer-in">
+      <button class="close" type="button" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      <p class="d-kick">06 · 2026 · Vanilla JS / Web Audio</p>
+      <h2 id="c-dd">Dimension Dash</h2>
+      <p class="d-dek">A spaced-repetition study game that teaches all 94 dimensional formulae from Class 11 physics.</p>
+      <dl class="case">
+        <div><dt>The problem</dt><dd>Dimensional formulae are a classic exam trap — 94 near-identical expressions that students usually brute-force by rote.</dd></div>
+        <div><dt>What I built</dt><dd>A custom SM-2/Leitner spaced-repetition scheduler drives six exam-aligned game modes — including a Build Lab where formulae are assembled from exponent bricks. Confusion sets are computed at runtime by grouping quantities with identical dimensions, and anchor formulae are force-surfaced first so the rest can be derived, not memorized.</dd></div>
+        <div><dt>Outcome</dt><dd>~3,000 dependency-free lines with a 94-cell mastery heatmap, JSON export/import, pre-paint theming, and reduced-motion support.</dd></div>
+      </dl>
+      <p class="d-nums"><span>94 formulae</span><span>6 game modes</span><span>0 dependencies</span><span>~3,000 lines</span></p>
+      <p class="d-stack">Vanilla JS/HTML/CSS · Web Audio synthesis · versioned localStorage · zero dependencies</p>
+      <p class="d-links"><span class="tag">Private build</span></p>
+    </div>
+  </dialog>
+
+  <dialog class="drawer" id="p-tejimola" data-slug="tejimola" aria-labelledby="c-tej">
+    <div class="drawer-in">
+      <button class="close" type="button" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      <p class="d-kick">07 · Feb 2026 · Unity / C#</p>
+      <h2 id="c-tej">Tejimola — The Blossom from Clay</h2>
+      <p class="d-dek">A 90-minute narrative adventure bringing an Assamese folktale to life.</p>
+      <dl class="case">
+        <div><dt>The problem</dt><dd>Regional folktales rarely make it into games; I wanted to celebrate Assamese heritage with mechanics that serve the story.</dd></div>
+        <div><dt>What I built</dt><dd>Four acts with four distinct mechanics — exploration, stealth, rhythm, and a boss battle — across a 2.5D world. Event-driven systems throughout: adaptive audio, JSON-driven branching dialogue, and a dspTime-based rhythm engine.</dd></div>
+        <div><dt>Outcome</dt><dd>A complete, playable 90-minute experience across four acts.</dd></div>
+      </dl>
+      <p class="d-nums"><span>90 minutes</span><span>4 acts</span><span>2.5D world</span><span>Rhythm engine</span></p>
+      <p class="d-stack">Unity · C# · event-driven architecture · AI-assisted development workflow</p>
+      <p class="d-links"><a class="lnk" href="https://github.com/MangoKrish/tejimola-blossom" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a></p>
+    </div>
+  </dialog>
+
+  <dialog class="drawer" id="p-neondrift" data-slug="neondrift" aria-labelledby="c-nd">
+    <div class="drawer-in">
+      <button class="close" type="button" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      <p class="d-kick">08 · Jan 2026 · DeltaHacks · HTML5 Canvas / vanilla JS</p>
+      <h2 id="c-nd">NeonDrift</h2>
+      <p class="d-dek">A high-octane browser arcade runner in pure Canvas — built at DeltaHacks.</p>
+      <dl class="case">
+        <div><dt>The problem</dt><dd>Make a browser game feel arcade-tight using nothing but the platform.</dd></div>
+        <div><dt>What I built</dt><dd>Hand-rolled physics loop and renderer on HTML5 Canvas with dynamic difficulty scaling, combo-chain scoring, and powerups — shield, magnet, slow-motion. Keyboard, touch, and drag controls for desktop and mobile.</dd></div>
+        <div><dt>Outcome</dt><dd>A consistent 60 FPS render target, cross-platform controls, and offline play.</dd></div>
+      </dl>
+      <p class="d-nums"><span>60 FPS</span><span>0 dependencies</span><span>PWA</span><span>Cross-platform</span></p>
+      <p class="d-stack">HTML5 Canvas · vanilla JavaScript · PWA architecture</p>
+      <p class="d-links">
+        <a class="lnk" href="https://mangokrish.github.io/NeonDrift/" target="_blank" rel="noopener noreferrer">Play <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+        <a class="lnk" href="https://github.com/MangoKrish/NeonDrift" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
+      </p>
+    </div>
+  </dialog>
+
+  <dialog class="drawer" id="p-petal" data-slug="petal" aria-labelledby="c-petal">
+    <div class="drawer-in">
+      <button class="close" type="button" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      <p class="d-kick">09 · 2026 · Kotlin / Jetpack Compose</p>
+      <h2 id="c-petal">Petal</h2>
+      <p class="d-dek">An Android-native period and cycle tracker built with modern app architecture.</p>
+      <dl class="case">
+        <div><dt>The problem</dt><dd>Cycle tracking is deeply personal data — it deserves a native, local-first home rather than an ad-funded app.</dd></div>
+        <div><dt>What I built</dt><dd>Kotlin and Jetpack Compose UI over a repository architecture: Room database with DAOs for cycles and daily fertility logs, Health Connect integration, pattern-flag insights, and an education library — 144 Kotlin files in a clean data/domain/presentation split.</dd></div>
+        <div><dt>Outcome</dt><dd>A working native app with offline-first storage and Health Connect sync.</dd></div>
+      </dl>
+      <p class="d-nums"><span>144 Kotlin files</span><span>Room + DAOs</span><span>Health Connect</span></p>
+      <p class="d-stack">Kotlin · Jetpack Compose · Room · Health Connect · Retrofit</p>
+      <p class="d-links"><a class="lnk" href="https://github.com/MangoKrish/petal-android" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a></p>
+    </div>
+  </dialog>
+
+  <dialog class="drawer" id="p-musicplayer" data-slug="musicplayer" aria-labelledby="c-mp">
+    <div class="drawer-in">
+      <button class="close" type="button" data-close aria-label="Close"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+      <p class="d-kick">10 · 2026 · React Native / TypeScript</p>
+      <h2 id="c-mp">Music Player</h2>
+      <p class="d-dek">A full-featured streaming music player with background audio and a persistent queue.</p>
+      <dl class="case">
+        <div><dt>The problem</dt><dd>Build a real music app — not a demo: search, background playback, and state that doesn’t reset every launch.</dd></div>
+        <div><dt>What I built</dt><dd>Expo dev-client app with debounced infinite-scroll search, full playback via expo-av with background support, a mini-player synced with the full player across screens, shuffle and repeat modes, and queue persistence in MMKV for synchronous O(1) reads.</dd></div>
+        <div><dt>Outcome</dt><dd>A standalone Android build with background audio and a queue that survives app restarts.</dd></div>
+      </dl>
+      <p class="d-nums"><span>Background audio</span><span>MMKV persistence</span><span>TypeScript</span></p>
+      <p class="d-stack">React Native (Expo) · TypeScript · Zustand · expo-av · MMKV · React Navigation</p>
+      <p class="d-links"><a class="lnk" href="https://github.com/MangoKrish/music-player-rn" target="_blank" rel="noopener noreferrer">GitHub <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a></p>
+    </div>
+  </dialog>
+
+  <p class="sr" id="copyStatus" role="status" aria-live="polite"></p>
   <script src="script.js"></script>
 </body>
 </html>
