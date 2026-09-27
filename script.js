@@ -60,15 +60,17 @@ document.addEventListener('DOMContentLoaded', () => {
   loadPalette();
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   let lastBg = '';
-  // backgrounds blend slowly; text flips quickly at the midpoint so it never
-  // passes through the same mid-tone as the background
+  // The blended background is painted on the canvas every frame. The page's own
+  // colour variables only change when a scene takes over — changing them every
+  // frame would restyle the whole document and make scrolling stutter.
   function applyColours(a, b, m) {
-    const bg = toHex(mix(palette[a].bg, palette[b].bg, m));
-    if (bg === lastBg) return;
-    lastBg = bg;
-    const fg = toHex(mix(palette[a].fg, palette[b].fg, smooth(0.44, 0.56, m)));
+    const cur = m > 0.5 ? b : a;
+    const key = cur + html.getAttribute('data-theme');
+    if (key === lastBg) return;
+    lastBg = key;
+    const bg = toHex(palette[cur].bg);
     html.style.setProperty('--bg', bg);
-    html.style.setProperty('--fg', fg);
+    html.style.setProperty('--fg', toHex(palette[cur].fg));
     themeMeta.setAttribute('content', bg);
   }
 
@@ -134,10 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (key === r.last) return;
         r.last = key;
         const ty = (1 - inT) * 34 - outT * 34;
-        const blur = (1 - op) * 10;
         r.el.style.opacity = op.toFixed(3);
         r.el.style.transform = `translate3d(0, ${ty.toFixed(1)}px, 0)`;
-        r.el.style.filter = blur > 0.3 ? `blur(${blur.toFixed(1)}px)` : 'none';
         r.el.style.pointerEvents = op > 0.5 ? '' : 'none';
       });
     });
@@ -154,13 +154,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const ctx = cv.getContext('2d');
   let W = 0, H = 0, DPR = 1;
   function sizeCanvas() {
-    DPR = Math.min(window.devicePixelRatio || 1, 1.75);
+    DPR = Math.min(window.devicePixelRatio || 1, 1.5);
     W = window.innerWidth; H = window.innerHeight;
     cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
   const small = window.matchMedia('(max-width: 760px)').matches;
-  const N = small ? 1300 : 2600;
+  const N = small ? 1000 : 2000;
 
   function rng(seed) {
     return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
@@ -292,7 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const U = Math.min(W, H) * 0.34 * scale;
     const cx0 = W / 2 + ox * W, cy0 = H / 2;
     const D = 3.3;
-    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = toHex(mix(palette[a].bg, palette[b].bg, m));
+    ctx.fillRect(0, 0, W, H);
     buckets[0].length = buckets[1].length = buckets[2].length = 0;
     for (let i = 0; i < N; i++) {
       const j = i * 3;
@@ -328,7 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function frame(now) {
     const dt = Math.min(64, now - lastT); lastT = now;
     const target = sceneFloat();
-    sSmooth += (target - sSmooth) * Math.min(1, dt * 0.0055);
+    // a light touch of easing (≈60ms) — enough to smooth wheel steps, not enough to feel late;
+    // the opening lines on load get a slower, deliberate entrance
+    sSmooth += (target - sSmooth) * Math.min(1, dt * (sSmooth < 0 ? 0.004 : 0.016));
     if (Math.abs(target - sSmooth) < 0.0005) sSmooth = target;
     px += (pointerX - px) * 0.04; py += (pointerY - py) * 0.04;
     reveal(sSmooth);
@@ -488,80 +491,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================================
-  // CHESS — live correspondence board (visitor plays White)
-  // Backend contract unchanged: GET /api/game, POST /api/move, POST /api/reset
+  // CHESS — two ways to play White:
+  //   engine: a full game against a small engine in a Web Worker (engine.js)
+  //   mail:   the live correspondence board — the move lands on my desk.
+  //           Backend contract unchanged: GET /api/game, POST /api/move, POST /api/reset
   // ==========================================================
   const board = $('chessboard');
   const piecesEl = $('cbPieces');
   const statusEl = $('chessStatus');
   const resetBtn = $('chessReset');
+  const undoBtn = $('chessUndo');
+  const subEl = $('chessSub');
+  const rulesEl = $('chessFig');
+  const levelWrap = $('chessLevel');
+  const modeBtns = Array.from(document.querySelectorAll('[data-chess-mode]'));
+  const levelBtns = Array.from(document.querySelectorAll('[data-level]'));
 
-  if (board) {
+  if (board && window.AKSChess) {
+    const C = window.AKSChess;
     const FILES = 'abcdefgh';
     const SVGNS = 'http://www.w3.org/2000/svg';
     const BACK = ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'];
     const NAME = { P: 'pawn', N: 'knight', B: 'bishop', R: 'rook', Q: 'queen', K: 'king' };
+    const LEVEL_NAME = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
     const sq = (f, r) => `${f},${r}`;
     const coord = (f, r) => FILES[f] + (8 - r);
+    const store = {
+      get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+      set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode */ } },
+    };
 
-    function startBoard() {
-      const b = {};
-      BACK.forEach((t, f) => { b[sq(f, 0)] = { t, c: 'b' }; b[sq(f, 7)] = { t, c: 'w' }; });
-      for (let f = 0; f < 8; f++) { b[sq(f, 1)] = { t: 'P', c: 'b' }; b[sq(f, 6)] = { t: 'P', c: 'w' }; }
-      return b;
-    }
-    function pathClear(b, f1, r1, f2, r2) {
-      const df = Math.sign(f2 - f1), dr = Math.sign(r2 - r1);
-      let f = f1 + df, r = r1 + dr;
-      while (f !== f2 || r !== r2) {
-        if (b[sq(f, r)]) return false;
-        f += df; r += dr;
-      }
-      return true;
-    }
-    // House rules: no castling, no en passant, kings may be captured.
-    function isLegal(b, from, to, color) {
-      const [f1, r1] = from, [f2, r2] = to;
-      if (f2 < 0 || f2 > 7 || r2 < 0 || r2 > 7) return false;
-      const p = b[sq(f1, r1)];
-      if (!p || p.c !== color) return false;
-      const target = b[sq(f2, r2)];
-      if (target && target.c === color) return false;
-      const df = f2 - f1, dr = r2 - r1, adf = Math.abs(df), adr = Math.abs(dr);
-      switch (p.t) {
-        case 'P': {
-          const dir = p.c === 'w' ? -1 : 1;
-          const home = p.c === 'w' ? 6 : 1;
-          if (df === 0 && dr === dir && !target) return true;
-          if (df === 0 && dr === 2 * dir && r1 === home && !target && !b[sq(f1, r1 + dir)]) return true;
-          if (adf === 1 && dr === dir && target) return true;
-          return false;
-        }
-        case 'N': return (adf === 1 && adr === 2) || (adf === 2 && adr === 1);
-        case 'B': return adf === adr && adf > 0 && pathClear(b, f1, r1, f2, r2);
-        case 'R': return (df === 0 || dr === 0) && (adf + adr > 0) && pathClear(b, f1, r1, f2, r2);
-        case 'Q': return ((adf === adr && adf > 0) || df === 0 || dr === 0) && pathClear(b, f1, r1, f2, r2);
-        case 'K': return adf <= 1 && adr <= 1 && (adf + adr > 0);
-        default: return false;
-      }
-    }
-    // Replay a move list from the start position -> {b, turn, status}
-    function replay(moves) {
-      const b = startBoard();
-      let status = 'active';
-      moves.forEach((m) => {
-        const p = b[sq(m.f[0], m.f[1])];
-        if (!p) return;
-        const target = b[sq(m.t[0], m.t[1])];
-        if (target && target.t === 'K') status = target.c === 'b' ? 'won_v' : 'won_o';
-        delete b[sq(m.f[0], m.f[1])];
-        const promo = p.t === 'P' && (m.t[1] === 0 || m.t[1] === 7);
-        b[sq(m.t[0], m.t[1])] = { t: promo ? 'Q' : p.t, c: p.c };
-      });
-      return { b, turn: moves.length % 2 === 0 ? 'w' : 'b', status };
-    }
-
-    // --- DOM: 8 rows x 8 gridcells, each holding a square button ---
+    // ---------- the board (shared by both modes) ----------
     const squares = [];
     for (let r = 0; r < 8; r++) {
       const row = document.createElement('div');
@@ -595,9 +555,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const pieceLayer = {};
-    let current = startBoard();
+    let current = {};
     let lastMove = null;
     let selected = null;
+    let checkSq = null;
 
     function makePiece(p) {
       const svg = document.createElementNS(SVGNS, 'svg');
@@ -617,14 +578,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cell.classList.contains('cb-selected')) label += ', selected';
         if (cell.classList.contains('cb-target')) label += ', legal move';
         if (cell.classList.contains('cb-cap')) label += ', capture';
+        if (cell.classList.contains('cb-check')) label += ', in check';
         cell.setAttribute('aria-label', label);
       });
     }
     function markLast() {
-      squares.forEach((c) => c.classList.remove('cb-last'));
-      if (!lastMove) return;
-      squareAt(lastMove.f[0], lastMove.f[1]).classList.add('cb-last');
-      squareAt(lastMove.t[0], lastMove.t[1]).classList.add('cb-last');
+      squares.forEach((c) => c.classList.remove('cb-last', 'cb-check'));
+      if (lastMove) {
+        squareAt(lastMove.f[0], lastMove.f[1]).classList.add('cb-last');
+        squareAt(lastMove.t[0], lastMove.t[1]).classList.add('cb-last');
+      }
+      if (checkSq) squareAt(checkSq[0], checkSq[1]).classList.add('cb-check');
     }
     function render(b) {
       current = b;
@@ -641,7 +605,7 @@ document.addEventListener('DOMContentLoaded', () => {
       markLast();
       labelSquares();
     }
-    // Move a piece with animation (used for smooth transitions)
+    // slide a piece (captures fade out)
     function animateMove(m, isReply) {
       const from = sq(m.f[0], m.f[1]), to = sq(m.t[0], m.t[1]);
       const el = pieceLayer[from];
@@ -657,47 +621,252 @@ document.addEventListener('DOMContentLoaded', () => {
       el.style.setProperty('--f', m.t[0]);
       el.style.setProperty('--r', m.t[1]);
     }
+    function clearSelection() {
+      selected = null;
+      squares.forEach((c) => c.classList.remove('cb-selected', 'cb-target', 'cb-cap'));
+      labelSquares();
+    }
 
-    // --- Exhibition fallback: the Italian Game, three moves in ---
-    let live = false;
+    let mode = store.get('aks-chess-mode') === 'mail' ? 'mail' : 'engine';
+
+    // ==========================================================
+    // ENGINE MODE
+    // ==========================================================
+    const saved = (() => { try { return JSON.parse(store.get('aks-chess-engine') || '{}'); } catch (e) { return {}; } })();
+    let eMoves = Array.isArray(saved.moves) ? saved.moves.filter((u) => /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(u)) : [];
+    let level = C.LEVELS[saved.level] ? saved.level : 'medium';
+    let pos = C.fromMoves(eMoves);
+    eMoves = eMoves.slice(0, pos.undo.length);   // drop anything that didn't replay
+    let thinking = false, reqId = 0, lastEngineSan = '', counted = eMoves.length > 0;
+    let worker = null;
+    function getWorker() {
+      if (worker) return worker;
+      try {
+        worker = new Worker('engine.js');
+        worker.onmessage = (e) => onEngineMove(e.data);
+        worker.onerror = () => { worker = null; };
+      } catch (e) { worker = null; }
+      return worker;
+    }
+    const saveEngine = () => store.set('aks-chess-engine', JSON.stringify({ moves: eMoves, level }));
+    const sqOf = (s) => [s & 7, s >> 4];
+    function posMap() {
+      const out = {};
+      for (let s = 0; s < 128; s++) {
+        if (s & 0x88) { s += 7; continue; }
+        const p = pos.b[s];
+        if (p) out[sq(s & 7, s >> 4)] = { t: ' PNBRQK'[Math.abs(p)], c: p > 0 ? 'w' : 'b' };
+      }
+      return out;
+    }
+    function engineOutcome() {
+      const legal = pos.legal();
+      if (!legal.length) return pos.inCheck() ? (pos.side > 0 ? 'lost' : 'won') : 'stalemate';
+      if (pos.half >= 100) return 'fifty';
+      if (pos.repeats() >= 2) return 'repetition';
+      if (pos.lowMaterial()) return 'material';
+      return null;
+    }
+    function syncEngineBoard() {
+      const hist = pos.undo;
+      lastMove = hist.length ? { f: sqOf(C.mFrom(hist[hist.length - 1][0])), t: sqOf(C.mTo(hist[hist.length - 1][0])) } : null;
+      checkSq = pos.inCheck() ? sqOf(pos.side > 0 ? pos.kw : pos.kb) : null;
+      render(posMap());
+    }
+    function engineStatus() {
+      const out = engineOutcome();
+      const lv = LEVEL_NAME[level];
+      resetBtn.hidden = eMoves.length === 0;
+      undoBtn.hidden = eMoves.length === 0 || !!out;
+      undoBtn.disabled = thinking;
+      if (out === 'won') statusEl.textContent = `Checkmate — you beat the engine on ${lv}. Screenshot it.`;
+      else if (out === 'lost') statusEl.textContent = `${lastEngineSan ? lastEngineSan + ' — checkmate.' : 'Checkmate.'} The engine takes this one. New game?`;
+      else if (out === 'stalemate') statusEl.textContent = 'Stalemate — a draw.';
+      else if (out === 'fifty') statusEl.textContent = 'Draw — fifty moves without a capture or pawn move.';
+      else if (out === 'repetition') statusEl.textContent = 'Draw by repetition.';
+      else if (out === 'material') statusEl.textContent = 'Draw — not enough material left to mate.';
+      else if (thinking) statusEl.textContent = 'The engine is thinking…';
+      else if (!eMoves.length) statusEl.textContent = `Pick a white piece to begin. Level: ${lv}.`;
+      else if (lastEngineSan) statusEl.textContent = `Engine played ${lastEngineSan}. ${pos.inCheck() ? "You're in check." : 'Your move.'}`;
+      else statusEl.textContent = 'Your move.';
+      return out;
+    }
+    function playEngineMove(m, byEngine) {
+      const san = pos.san(m);
+      const from = sqOf(C.mFrom(m)), to = sqOf(C.mTo(m)), fl = C.mFlags(m);
+      animateMove({ f: from, t: to }, byEngine);
+      if (fl & C.F_CASTLE) {
+        const row = to[1], kingSide = to[0] === 6;
+        animateMove({ f: [kingSide ? 7 : 0, row], t: [kingSide ? 5 : 3, row] }, byEngine);
+      }
+      pos.make(m);
+      eMoves.push(C.uci(m));
+      if (byEngine) lastEngineSan = san;
+      saveEngine();
+      syncEngineBoard();   // en passant victims and promotions settle here
+      const out = engineStatus();
+      if (out) beacon('filter', `chess:engine:${level}:${out}`);
+      return out;
+    }
+    function askEngine() {
+      thinking = true;
+      engineStatus();
+      const id = ++reqId, t0 = performance.now();
+      const w = getWorker();
+      const deliver = (data) => {
+        const wait = Math.max(0, 450 - (performance.now() - t0));   // a beat, so a reply never feels instant
+        setTimeout(() => onEngineMove(Object.assign({ id }, data)), wait);
+      };
+      const onPage = () => setTimeout(() => {   // no worker: think on the page instead
+        const r = C.search(C.fromMoves(eMoves), C.LEVELS[level]);
+        deliver({ move: r.move ? C.uci(r.move) : null });
+      }, 30);
+      if (w) {
+        w.onmessage = (e) => deliver(e.data);
+        w.onerror = () => { worker = null; onPage(); };
+        w.postMessage({ id, moves: eMoves.slice(), level });
+      } else onPage();
+    }
+    function onEngineMove(data) {
+      if (data.id !== reqId || mode !== 'engine') return;
+      thinking = false;
+      const m = data.move && pos.fromUci(data.move);
+      if (!m) { engineStatus(); return; }
+      playEngineMove(m, true);
+    }
+    function onSquareEngine(cell) {
+      if (thinking || engineOutcome()) return;
+      const f = +cell.dataset.f, r = +cell.dataset.r, s = r * 16 + f;
+      const here = pos.b[s];
+      const legal = pos.legal();
+      if (selected === null) {
+        if (here > 0) {
+          const mine = legal.filter((m) => C.mFrom(m) === s);
+          if (!mine.length) { statusEl.textContent = pos.inCheck() ? "That piece can't help — you're in check." : 'That piece has no legal moves.'; return; }
+          selected = s;
+          cell.classList.add('cb-selected');
+          mine.forEach((m) => { const [tf, tr] = sqOf(C.mTo(m)); squareAt(tf, tr).classList.add(C.mFlags(m) & C.F_CAP ? 'cb-cap' : 'cb-target'); });
+          labelSquares();
+        }
+        return;
+      }
+      if (selected === s) { clearSelection(); return; }
+      if (here > 0) { clearSelection(); onSquareEngine(cell); return; }
+      const choice = legal.filter((m) => C.mFrom(m) === selected && C.mTo(m) === s);
+      if (!choice.length) return;
+      const m = choice.find((x) => C.mPromo(x) === 5) || choice[0];   // pawns promote to a queen
+      clearSelection();
+      if (!counted) { counted = true; beacon('filter', `chess:engine:${level}:start`); }
+      if (!playEngineMove(m, false)) askEngine();
+    }
+    function engineNew() {
+      reqId++; thinking = false;
+      eMoves = []; pos = C.fromMoves([]); lastEngineSan = ''; counted = false;
+      saveEngine(); clearSelection(); syncEngineBoard(); engineStatus();
+    }
+    function engineUndo() {
+      if (thinking || !eMoves.length) return;
+      eMoves.splice(pos.side > 0 ? -2 : -1);   // take back your move and the engine's reply
+      pos = C.fromMoves(eMoves);
+      lastEngineSan = '';
+      saveEngine(); clearSelection(); syncEngineBoard(); engineStatus();
+    }
+    function enterEngine() {
+      board.classList.add('live');
+      board.setAttribute('aria-label', `Chessboard — you play White against the engine, level ${LEVEL_NAME[level]}`);
+      subEl.textContent = 'You play White against a small engine that thinks right in your browser. Full rules, three levels.';
+      rulesEl.textContent = 'Standard rules — castling, en passant, the lot. Pawns promote to a queen.';
+      levelWrap.hidden = false;
+      clearSelection(); syncEngineBoard(); engineStatus();
+      if (pos.side < 0 && !engineOutcome()) askEngine();   // it was the engine's turn when you left
+    }
+
+    // ==========================================================
+    // MAIL MODE (house rules: no castling, no en passant, capture the king)
+    // ==========================================================
+    function startBoard() {
+      const b = {};
+      BACK.forEach((t, f) => { b[sq(f, 0)] = { t, c: 'b' }; b[sq(f, 7)] = { t, c: 'w' }; });
+      for (let f = 0; f < 8; f++) { b[sq(f, 1)] = { t: 'P', c: 'b' }; b[sq(f, 6)] = { t: 'P', c: 'w' }; }
+      return b;
+    }
+    function pathClear(b, f1, r1, f2, r2) {
+      const df = Math.sign(f2 - f1), dr = Math.sign(r2 - r1);
+      let f = f1 + df, r = r1 + dr;
+      while (f !== f2 || r !== r2) {
+        if (b[sq(f, r)]) return false;
+        f += df; r += dr;
+      }
+      return true;
+    }
+    function isLegal(b, from, to, color) {
+      const [f1, r1] = from, [f2, r2] = to;
+      if (f2 < 0 || f2 > 7 || r2 < 0 || r2 > 7) return false;
+      const p = b[sq(f1, r1)];
+      if (!p || p.c !== color) return false;
+      const target = b[sq(f2, r2)];
+      if (target && target.c === color) return false;
+      const df = f2 - f1, dr = r2 - r1, adf = Math.abs(df), adr = Math.abs(dr);
+      switch (p.t) {
+        case 'P': {
+          const dir = p.c === 'w' ? -1 : 1;
+          const home = p.c === 'w' ? 6 : 1;
+          if (df === 0 && dr === dir && !target) return true;
+          if (df === 0 && dr === 2 * dir && r1 === home && !target && !b[sq(f1, r1 + dir)]) return true;
+          if (adf === 1 && dr === dir && target) return true;
+          return false;
+        }
+        case 'N': return (adf === 1 && adr === 2) || (adf === 2 && adr === 1);
+        case 'B': return adf === adr && adf > 0 && pathClear(b, f1, r1, f2, r2);
+        case 'R': return (df === 0 || dr === 0) && (adf + adr > 0) && pathClear(b, f1, r1, f2, r2);
+        case 'Q': return ((adf === adr && adf > 0) || df === 0 || dr === 0) && pathClear(b, f1, r1, f2, r2);
+        case 'K': return adf <= 1 && adr <= 1 && (adf + adr > 0);
+        default: return false;
+      }
+    }
+    function replay(moves) {
+      const b = startBoard();
+      let status = 'active';
+      moves.forEach((m) => {
+        const p = b[sq(m.f[0], m.f[1])];
+        if (!p) return;
+        const target = b[sq(m.t[0], m.t[1])];
+        if (target && target.t === 'K') status = target.c === 'b' ? 'won_v' : 'won_o';
+        delete b[sq(m.f[0], m.f[1])];
+        const promo = p.t === 'P' && (m.t[1] === 0 || m.t[1] === 7);
+        b[sq(m.t[0], m.t[1])] = { t: promo ? 'Q' : p.t, c: p.c };
+      });
+      return { b, turn: moves.length % 2 === 0 ? 'w' : 'b', status };
+    }
+
+    let live = false, game = null, waitingNoted = false, mailLoaded = false, exhibitionTimers = [];
     function exhibition() {
       live = false;
       board.classList.remove('live');
+      lastMove = null; checkSq = null;
       render(startBoard());
       const MOVES = [
         { f: [4, 6], t: [4, 4] }, { f: [4, 1], t: [4, 3] },
         { f: [6, 7], t: [5, 5] }, { f: [1, 0], t: [2, 2] },
         { f: [5, 7], t: [2, 4] }, { f: [5, 0], t: [2, 3] },
       ];
-      statusEl.textContent = "The live board is resting — here's the Italian Game, three moves in.";
+      statusEl.textContent = "The mail board is resting — here's the Italian Game, three moves in. The engine is always up for a game.";
       resetBtn.hidden = true;
-      if (RM) {
-        lastMove = MOVES[MOVES.length - 1];
-        render(replay(MOVES).b);
-      } else {
-        const io = new IntersectionObserver((entries) => {
-          if (entries.some((e) => e.isIntersecting)) {
-            io.disconnect();
-            MOVES.forEach((m, i) => setTimeout(() => {
-              animateMove(m);
-              lastMove = m;
-              current = replay(MOVES.slice(0, i + 1)).b;
-              markLast();
-              labelSquares();
-            }, 900 + i * 850));
-          }
-        }, { threshold: 0.4 });
-        io.observe(board);
-      }
+      exhibitionTimers.forEach(clearTimeout);
+      exhibitionTimers = MOVES.map((m, i) => setTimeout(() => {
+        if (mode !== 'mail') return;
+        animateMove(m);
+        lastMove = m;
+        current = replay(MOVES.slice(0, i + 1)).b;
+        markLast();
+        labelSquares();
+      }, RM ? 0 : 600 + i * 700));
     }
-
-    // --- Live game ---
-    let game = null;
-    let waitingNoted = false;
     function myTurn() { return game && game.status === 'active' && game.moves.length % 2 === 0; }
-    function updateUI() {
+    function mailUI() {
       const { b, status } = replay(game.moves);
       lastMove = game.moves.length ? game.moves[game.moves.length - 1] : null;
+      checkSq = null;
       render(b);
       resetBtn.hidden = game.moves.length === 0 && status === 'active';
       if (status === 'won_v') statusEl.textContent = 'You took my king. Well played — rematch?';
@@ -706,9 +875,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (game.moves.length) {
           const m = game.moves[game.moves.length - 1];
           statusEl.textContent = `I played ${coord(...m.f)} to ${coord(...m.t)}. Your move.`;
-        } else statusEl.textContent = 'Pick a white piece to begin.';
+        } else statusEl.textContent = 'Pick a white piece to begin. Your move goes to my desk.';
         waitingNoted = false;
-      } else statusEl.textContent = 'Sent. The move is on my desk — check back soon.';
+      } else statusEl.textContent = 'Sent. The move is on my desk — check back soon. Meanwhile, the engine is free.';
       if (status !== 'active') resetBtn.hidden = false;
     }
     async function api(path, payload) {
@@ -720,43 +889,35 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!res.ok) throw new Error(`pulse ${res.status}`);
       return res.json();
     }
-    // While waiting on the owner's reply, quietly poll so an open tab
-    // sees the response without a refresh.
-    let pollTimer;
-    let lastCheck = 0;
+    let pollTimer, lastCheck = 0;
     async function checkForReply() {
-      if (!game) return;
+      if (!game || mode !== 'mail') return;
       if (myTurn() || replay(game.moves).status !== 'active') { clearInterval(pollTimer); return; }
       lastCheck = Date.now();
       try {
         const resp = await api(`/api/game?vid=${encodeURIComponent(vid)}`, null);
-        if (resp.game && resp.game.moves.length > game.moves.length) {
+        if (resp.game && resp.game.moves.length > game.moves.length && mode === 'mail') {
           const reply = resp.game.moves[game.moves.length];
           game = resp.game;
           animateMove(reply, true);
-          setTimeout(updateUI, 500);
+          setTimeout(mailUI, 500);
         }
       } catch (e) { /* next tick */ }
     }
     function schedulePoll() {
       clearInterval(pollTimer);
-      pollTimer = setInterval(() => { if (!document.hidden && game) checkForReply(); }, 45000);
+      pollTimer = setInterval(() => { if (!document.hidden && game && mode === 'mail') checkForReply(); }, 45000);
     }
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden || !game || !live) return;
+      if (document.hidden || !game || !live || mode !== 'mail') return;
       if (replay(game.moves).status !== 'active' || myTurn()) return;
       if (Date.now() - lastCheck > 20000) checkForReply();
     });
-    function clearSelection() {
-      selected = null;
-      squares.forEach((c) => c.classList.remove('cb-selected', 'cb-target', 'cb-cap'));
-      labelSquares();
-    }
-    async function onSquare(cell) {
+    async function onSquareMail(cell) {
       if (!game || !live) return;
       if (!myTurn()) {
         if (!waitingNoted && replay(game.moves).status === 'active') {
-          statusEl.textContent = 'Waiting for my reply — the board unlocks when I move.';
+          statusEl.textContent = 'Waiting for my reply — the board unlocks when I move. Try the engine meanwhile.';
           waitingNoted = true;
         }
         return;
@@ -777,26 +938,79 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       if (selected[0] === f && selected[1] === r) { clearSelection(); return; }
-      if (here && here.c === 'w') { clearSelection(); onSquare(cell); return; }
+      if (here && here.c === 'w') { clearSelection(); onSquareMail(cell); return; }
       if (!isLegal(b, selected, [f, r], 'w')) return;
       const move = { f: selected, t: [f, r] };
       clearSelection();
       game.moves.push(move);
       animateMove(move);
-      updateUI();
+      mailUI();
       beacon('chess_move', coord(...move.f) + coord(...move.t));
       try {
         game = (await api('/api/move', { vid, f: move.f, t: move.t })).game;
-        updateUI();
+        if (mode === 'mail') mailUI();
         schedulePoll();
       } catch (e) {
         game.moves.pop();
-        updateUI();
+        if (mode === 'mail') mailUI();
         statusEl.textContent = "Couldn't reach the board — try again in a minute.";
       }
     }
+    async function enterMail() {
+      board.setAttribute('aria-label', 'Live correspondence chessboard — you play White, I reply by hand');
+      subEl.textContent = 'You play White. The move lands on my desk, and I reply to every game — by hand.';
+      rulesEl.textContent = 'House rules: no castling, no en passant — capture the king to win.';
+      levelWrap.hidden = true;
+      undoBtn.hidden = true;
+      clearSelection();
+      if (mailLoaded) { if (live && game) { board.classList.add('live'); mailUI(); } else exhibition(); return; }
+      mailLoaded = true;
+      lastMove = null; checkSq = null;
+      render(startBoard());
+      resetBtn.hidden = true;
+      statusEl.textContent = 'Fetching the board from my desk…';
+      try {
+        const resp = await api(`/api/game?vid=${encodeURIComponent(vid)}`, null);
+        game = resp.game || { moves: [], status: 'active' };
+        live = true;
+        lastCheck = Date.now();
+        if (mode !== 'mail') return;
+        board.classList.add('live');
+        mailUI();
+        if (!myTurn()) schedulePoll();
+      } catch (e) {
+        if (mode === 'mail') exhibition();
+      }
+    }
+
+    // ---------- wiring ----------
+    function setMode(next, user) {
+      mode = next;
+      store.set('aks-chess-mode', mode);
+      modeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.chessMode === mode)));
+      if (mode === 'engine') enterEngine(); else enterMail();
+      if (user) beacon('filter', 'chess:mode:' + mode);
+    }
+    modeBtns.forEach((b) => b.addEventListener('click', () => { if (b.dataset.chessMode !== mode) setMode(b.dataset.chessMode, true); }));
+    function syncLevel() { levelBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.level === level))); }
+    levelBtns.forEach((b) => b.addEventListener('click', () => {
+      level = b.dataset.level; syncLevel(); saveEngine();
+      board.setAttribute('aria-label', `Chessboard — you play White against the engine, level ${LEVEL_NAME[level]}`);
+      if (!thinking) engineStatus();
+    }));
+    syncLevel();
+    undoBtn.addEventListener('click', engineUndo);
+    resetBtn.addEventListener('click', async () => {
+      if (mode === 'engine') { engineNew(); return; }
+      try {
+        game = (await api('/api/reset', { vid })).game;
+        clearSelection();
+        mailUI();
+        beacon('chess_reset', '');
+      } catch (e) { /* keep current state */ }
+    });
     squares.forEach((cell, idx) => {
-      cell.addEventListener('click', () => { setFocusSquare(idx, false); onSquare(cell); });
+      cell.addEventListener('click', () => { setFocusSquare(idx, false); if (mode === 'engine') onSquareEngine(cell); else onSquareMail(cell); });
       cell.addEventListener('keydown', (e) => {
         const f = idx % 8, r = Math.floor(idx / 8);
         let nf = f, nr = r;
@@ -807,35 +1021,13 @@ document.addEventListener('DOMContentLoaded', () => {
           case 'ArrowDown': nr = Math.min(7, r + 1); break;
           case 'Home': nf = 0; break;
           case 'End': nf = 7; break;
-          case 'Escape': if (selected) { e.preventDefault(); clearSelection(); } return;
+          case 'Escape': if (selected !== null) { e.preventDefault(); clearSelection(); } return;
           default: return;
         }
         e.preventDefault();
         setFocusSquare(nr * 8 + nf, true);
       });
     });
-    resetBtn.addEventListener('click', async () => {
-      try {
-        game = (await api('/api/reset', { vid })).game;
-        clearSelection();
-        updateUI();
-        beacon('chess_reset', '');
-      } catch (e) { /* keep current state */ }
-    });
-
-    render(startBoard());
-    (async () => {
-      try {
-        const resp = await api(`/api/game?vid=${encodeURIComponent(vid)}`, null);
-        game = resp.game || { moves: [], status: 'active' };
-        live = true;
-        board.classList.add('live');
-        lastCheck = Date.now();
-        updateUI();
-        if (!myTurn()) schedulePoll();
-      } catch (e) {
-        exhibition();
-      }
-    })();
+    setMode(mode, false);
   }
 });

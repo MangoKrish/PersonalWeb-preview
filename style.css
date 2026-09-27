@@ -98,7 +98,7 @@ html[data-theme="ink"] .icon-btn .i-moon { display: none; }
 }
 
 /* ---------- scenes ---------- */
-.scene { position: relative; z-index: 1; height: 240vh; }
+.scene { position: relative; z-index: 1; height: 170vh; }
 .pin {
   position: sticky; top: 0; height: 100vh; height: 100svh;
   display: flex; align-items: center;
@@ -155,7 +155,7 @@ html[data-theme="ink"] .icon-btn .i-moon { display: none; }
 .mail a:hover { text-decoration-thickness: 2px; }
 
 /* reveal: hidden until script.js brings each line in (only when motion is on) */
-html.js:not(.rm) .rv { opacity: 0; will-change: opacity, transform, filter; }
+html.js:not(.rm) .rv { opacity: 0; will-change: opacity, transform; }
 
 /* ---------- chess scene ---------- */
 .scene-chess .pin { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: clamp(32px, 6vw, 96px); align-items: center; }
@@ -238,3 +238,13 @@ html.rm .top, html:not(.js) .top { position: absolute; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* ---------- chess controls ---------- */
+.chess-ctl { display: flex; flex-wrap: wrap; gap: 10px 12px; margin-top: 24px; }
+.seg { display: inline-flex; padding: 3px; border: 1.5px solid currentColor; border-radius: 999px; }
+.seg button { min-height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: inherit; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.seg.small button { min-height: 30px; padding: 0 11px; font-size: 13px; }
+.cb-sq.cb-check { background: #B5483B; }
+.cb-sq.dark.cb-check { background: #9C3A2F; }
+@media (max-width: 860px) { .chess-ctl { margin-top: 14px; } .seg button { padding: 0 11px; } }

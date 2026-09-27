@@ -156,18 +156,30 @@
         <div class="copy chess-copy">
           <p class="kicker rv" data-k="0">Off the keyboard · FIDE-rated</p>
           <h2 class="big" id="chess" tabindex="-1"><span class="line rv" data-k="1">Your <em>move.</em></span></h2>
-          <p class="sub rv" data-k="2">You play White. The move lands on my desk, and I reply to every game.</p>
-          <p class="chess-status rv" data-k="3" id="chessStatus" aria-live="polite">Setting up the board…</p>
-          <p class="acts small-acts rv" data-k="4">
+          <p class="sub rv" data-k="2" id="chessSub">You play White against a small engine that thinks right in your browser. Full rules, three levels.</p>
+          <div class="chess-ctl rv" data-k="3">
+            <div class="seg" role="group" aria-label="Opponent">
+              <button type="button" data-chess-mode="engine" aria-pressed="true">vs Engine</button>
+              <button type="button" data-chess-mode="mail" aria-pressed="false">vs Me, by mail</button>
+            </div>
+            <div class="seg small" role="group" aria-label="Engine level" id="chessLevel">
+              <button type="button" data-level="easy" aria-pressed="false">Easy</button>
+              <button type="button" data-level="medium" aria-pressed="true">Medium</button>
+              <button type="button" data-level="hard" aria-pressed="false">Hard</button>
+            </div>
+          </div>
+          <p class="chess-status rv" data-k="4" id="chessStatus" aria-live="polite">Setting up the board…</p>
+          <p class="acts small-acts rv" data-k="5">
+            <button class="lnk as-btn" id="chessUndo" type="button" hidden>Take back</button>
             <button class="lnk as-btn" id="chessReset" type="button" hidden>New game</button>
             <a class="lnk" href="https://ratings.fide.com/profile/547078332" target="_blank" rel="noopener noreferrer">FIDE <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
             <a class="lnk" href="https://www.chess.ca/en/ratings/p/?id=202654" target="_blank" rel="noopener noreferrer">CFC <svg class="ico" aria-hidden="true"><use href="#i-out"/></svg></a>
           </p>
-          <p class="rules rv" data-k="5" id="chessFig">House rules: no castling, no en passant — capture the king to win.</p>
+          <p class="rules rv" data-k="6" id="chessFig">Standard rules — castling, en passant, the lot. Pawns promote to a queen.</p>
         </div>
         <div class="board-wrap rv" data-k="2">
           <div class="board-sq">
-            <div id="chessboard" class="cb" role="grid" aria-label="Live correspondence chessboard, you play White" aria-describedby="chessStatus"></div>
+            <div id="chessboard" class="cb" role="grid" aria-label="Chessboard — you play White" aria-describedby="chessStatus"></div>
             <div class="cb-pieces" id="cbPieces" aria-hidden="true"></div>
           </div>
           <noscript><p>The live board needs JavaScript.</p></noscript>
@@ -193,7 +205,7 @@
   </main>
 
   <footer class="foot">
-    <p>Hand-built with zero dependencies — the point field is plain canvas. First-party stats only; Do Not Track is respected.</p>
+    <p>Hand-built with zero dependencies — the point field is plain canvas, the chess engine plain JavaScript. First-party stats only; Do Not Track is respected.</p>
     <p>© 2026 Akshay Krishna Sirigana · Hamilton, Ontario</p>
   </footer>
 
@@ -401,6 +413,7 @@
   </dialog>
 
   <p class="sr" id="copyStatus" role="status" aria-live="polite"></p>
+  <script src="engine.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
